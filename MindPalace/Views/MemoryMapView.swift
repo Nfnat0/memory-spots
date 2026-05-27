@@ -30,11 +30,7 @@ struct MemoryMapView: View {
     var body: some View {
         ZStack(alignment: .top) {
             if visiblePhotos.isEmpty {
-                ContentUnavailableView(
-                    "地図に置いた写真がありません",
-                    systemImage: "map",
-                    description: Text("写真に場所を追加すると、ここに記憶スポットが並びます。")
-                )
+                MapEmptyState()
             } else {
                 Map(position: $cameraPosition, selection: $selectedPhotoId) {
                     ForEach(visiblePhotos) { photo in
@@ -51,15 +47,26 @@ struct MemoryMapView: View {
                     MapCompass()
                     MapUserLocationButton()
                 }
+                .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
                 .ignoresSafeArea(edges: .bottom)
             }
 
             VStack(spacing: 10) {
-                Text("記憶マップ")
-                    .font(.title2.weight(.bold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(.regularMaterial, in: Capsule())
+                VStack(spacing: 3) {
+                    Text("記憶マップ")
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(PalaceStyle.ink)
+                    Text("写真の道しるべをたどる")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(PalaceStyle.mutedInk)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white.opacity(0.58), lineWidth: 1)
+                }
 
                 SetFilterChips(
                     memorySets: memorySets,
@@ -107,6 +114,32 @@ struct MemoryMapView: View {
     }
 }
 
+private struct MapEmptyState: View {
+    var body: some View {
+        ZStack {
+            NotebookBackground()
+
+            VStack(spacing: 18) {
+                NotebookHeroImage()
+                    .frame(width: 220, height: 180)
+                    .shadow(color: PalaceStyle.ink.opacity(0.16), radius: 16, y: 8)
+
+                VStack(spacing: 8) {
+                    Text("まだ地図に置いた写真がありません")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(PalaceStyle.ink)
+                    Text("写真に場所を追加すると、思い出すための道しるべがここに並びます。")
+                        .font(.subheadline)
+                        .foregroundStyle(PalaceStyle.mutedInk)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 28)
+            }
+            .padding(.top, 56)
+        }
+    }
+}
+
 private struct SetFilterChips: View {
     let memorySets: [MemorySet]
     @Binding var selectedSetId: UUID?
@@ -147,8 +180,12 @@ private struct FilterChip: View {
                 .lineLimit(1)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .background(isSelected ? Color.accentColor : Color(uiColor: .secondarySystemBackground), in: Capsule())
-                .foregroundStyle(isSelected ? .white : .primary)
+                .background(isSelected ? PalaceStyle.coral : .white.opacity(0.82), in: Capsule())
+                .foregroundStyle(isSelected ? .white : PalaceStyle.ink)
+                .overlay {
+                    Capsule()
+                        .stroke(isSelected ? .clear : PalaceStyle.paperDeep.opacity(0.5), lineWidth: 1)
+                }
         }
         .buttonStyle(.plain)
     }
@@ -164,6 +201,10 @@ private struct PhotoMapPin: View {
                 .fill(.white)
                 .frame(width: 54, height: 54)
                 .shadow(color: .black.opacity(0.24), radius: 8, y: 3)
+                .overlay {
+                    Circle()
+                        .stroke(isSelected ? PalaceStyle.coral : PalaceStyle.paperDeep, lineWidth: isSelected ? 4 : 2)
+                }
 
             if let image {
                 Image(uiImage: image)
@@ -173,11 +214,11 @@ private struct PhotoMapPin: View {
                     .clipShape(Circle())
             } else {
                 Circle()
-                    .fill(.secondary.opacity(0.18))
+                    .fill(PalaceStyle.paperDeep.opacity(0.32))
                     .frame(width: 46, height: 46)
                     .overlay {
                         Image(systemName: "photo")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(PalaceStyle.mutedInk)
                     }
             }
         }
@@ -205,14 +246,15 @@ private struct MapPreviewCard: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(photo.title)
                     .font(.headline)
+                    .foregroundStyle(PalaceStyle.ink)
                     .lineLimit(1)
-                Text(memorySet?.name ?? "記憶セット")
+                Text(memorySet?.name ?? "旅のアルバム")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(PalaceStyle.mutedInk)
                     .lineLimit(1)
                 Label("\(noteCount) メモ", systemImage: "sparkles")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(PalaceStyle.sage)
             }
 
             Spacer()
@@ -238,6 +280,11 @@ private struct MapPreviewCard: View {
             }
         }
         .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.white.opacity(0.6), lineWidth: 1)
+        }
+        .shadow(color: PalaceStyle.ink.opacity(0.16), radius: 14, y: 6)
     }
 }

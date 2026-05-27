@@ -30,7 +30,7 @@ struct PhotoEditorView: View {
                     let imageFrame = aspectFitFrame(imageSize: image.size, containerSize: proxy.size)
 
                     ZStack(alignment: .topLeading) {
-                        Color.black.opacity(0.04)
+                        PalaceStyle.paper.opacity(0.58)
                             .ignoresSafeArea()
 
                         Image(uiImage: image)
@@ -73,6 +73,7 @@ struct PhotoEditorView: View {
             HStack {
                 Label("現在のテーマ: \(theme.name)", systemImage: "tag")
                     .font(.subheadline)
+                    .foregroundStyle(PalaceStyle.ink)
                     .lineLimit(1)
 
                 Spacer()
@@ -113,7 +114,12 @@ struct PhotoEditorView: View {
                 .buttonStyle(.borderedProminent)
             }
             .padding()
-            .background(.regularMaterial)
+            .background(.ultraThinMaterial)
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(PalaceStyle.paperDeep.opacity(0.45))
+                    .frame(height: 1)
+            }
         }
         .photosPicker(isPresented: $isImagePickerPresented, selection: $selectedImageItem, matching: .images)
         .onChange(of: selectedImageItem) {
@@ -242,7 +248,7 @@ private struct MemoryItemView: View {
             case .stickyText:
                 Text(item.frontText.isEmpty ? "メモ" : item.frontText)
                     .font(.callout.weight(.semibold))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(PalaceStyle.ink)
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 10)
@@ -259,7 +265,7 @@ private struct MemoryItemView: View {
                 } else {
                     Label("画像", systemImage: "photo")
                         .padding(12)
-                        .background(.white, in: RoundedRectangle(cornerRadius: 8))
+                        .background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 8))
                 }
             case .icon:
                 VStack(spacing: 4) {
@@ -272,17 +278,17 @@ private struct MemoryItemView: View {
                 }
                 .foregroundStyle(.white)
                 .padding(12)
-                .background(.blue.gradient, in: Circle())
+                .background(PalaceStyle.sage.gradient, in: Circle())
             case .numberLabel:
                 Text(item.frontText.isEmpty ? "1" : item.frontText)
                     .font(.title2.weight(.black))
                     .foregroundStyle(.white)
                     .frame(width: 48, height: 48)
-                    .background(.orange.gradient, in: Circle())
+                    .background(PalaceStyle.amber.gradient, in: Circle())
             case .arrow:
                 Image(systemName: "arrow.right")
                     .font(.system(size: 48, weight: .black))
-                    .foregroundStyle(.red)
+                    .foregroundStyle(PalaceStyle.coral)
             }
         }
         .shadow(color: .black.opacity(0.18), radius: 5, y: 2)
@@ -292,13 +298,13 @@ private struct MemoryItemView: View {
     private var stickyColor: Color {
         switch item.colorName {
         case "pink":
-            .pink.opacity(0.78)
+            PalaceStyle.coral.opacity(0.62)
         case "blue":
-            .cyan.opacity(0.76)
+            Color(red: 0.55, green: 0.75, blue: 0.78).opacity(0.82)
         case "green":
-            .green.opacity(0.72)
+            PalaceStyle.sage.opacity(0.72)
         default:
-            .yellow
+            Color(red: 0.98, green: 0.82, blue: 0.36)
         }
     }
 }
@@ -351,6 +357,8 @@ private struct NoteEditorView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(NotebookBackground())
             .navigationTitle("メモ編集")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

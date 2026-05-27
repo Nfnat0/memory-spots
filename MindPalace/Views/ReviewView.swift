@@ -52,6 +52,7 @@ struct ReviewView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(current.item.frontText)
                         .font(.title3.weight(.semibold))
+                        .foregroundStyle(PalaceStyle.ink)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     Button {
@@ -67,7 +68,8 @@ struct ReviewView: View {
                             .font(.body)
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+                            .foregroundStyle(PalaceStyle.ink)
+                            .background(.white.opacity(0.68), in: RoundedRectangle(cornerRadius: 8))
 
                         HStack {
                             ForEach(ReviewGrade.allCases) { grade in
@@ -81,15 +83,16 @@ struct ReviewView: View {
                     }
                 }
                 .padding()
-                .background(.background)
+                .background(.ultraThinMaterial)
             } else {
                 ContentUnavailableView(
-                    "復習するメモがありません",
-                    systemImage: "checkmark.circle",
-                    description: Text("このテーマにメモを追加してから復習してください。")
+                    "めぐるメモがありません",
+                    systemImage: "map",
+                    description: Text("このテーマにメモを置くと、写真の道順でたどれます。")
                 )
             }
         }
+        .background(NotebookBackground())
         .navigationTitle(theme.name)
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -129,7 +132,7 @@ private struct ReviewPhotoView: View {
                 let imageFrame = aspectFitFrame(imageSize: image.size, containerSize: proxy.size)
 
                 ZStack(alignment: .topLeading) {
-                    Color.black.opacity(0.04)
+                    PalaceStyle.paper.opacity(0.58)
 
                     Image(uiImage: image)
                         .resizable()

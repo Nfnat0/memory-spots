@@ -38,116 +38,21 @@ struct MemorySetDetailView: View {
         return setThemes.first { $0.id == id }
     }
 
+    private var headerNoteCount: Int {
+        let photoIds = Set(setPhotos.map(\.id))
+        return items.filter { photoIds.contains($0.photoId) }.count
+    }
+
     var body: some View {
         List {
-            Section {
-                if setThemes.isEmpty {
-                    Button("デフォルトテーマを作成") {
-                        createDefaultTheme()
-                    }
-                } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(setThemes) { theme in
-                                Button {
-                                    selectedThemeId = theme.id
-                                } label: {
-                                    Text(theme.name)
-                                        .font(.subheadline.weight(.semibold))
-                                        .lineLimit(1)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 8)
-                                        .background(
-                                            selectedTheme?.id == theme.id ? Color.accentColor : Color(uiColor: .secondarySystemBackground),
-                                            in: Capsule()
-                                        )
-                                        .foregroundStyle(selectedTheme?.id == theme.id ? .white : .primary)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-
-                    HStack {
-                        Button("テーマ追加") {
-                            isAddingTheme = true
-                        }
-
-                        Spacer()
-
-                        Button("選択テーマを削除", role: .destructive) {
-                            deleteSelectedTheme()
-                        }
-                        .disabled(setThemes.count < 2 || selectedTheme == nil)
-                    }
-                }
-            } header: {
-                Text("テーマ")
-            }
-
-            Section {
-                if let selectedTheme {
-                    NavigationLink {
-                        ReviewView(memorySet: memorySet, theme: selectedTheme)
-                    } label: {
-                        Label("メモをめぐる", systemImage: "play.circle")
-                    }
-                    .disabled(reviewItems(for: selectedTheme).isEmpty)
-                }
-            }
-
-            Section {
-                if setPhotos.isEmpty {
-                    ContentUnavailableView(
-                        "写真がありません",
-                        systemImage: "photo",
-                        description: Text("ライブラリまたはカメラから場所写真を追加してください。")
-                    )
-                } else {
-                    ForEach(setPhotos) { photo in
-                        if let selectedTheme {
-                            VStack(alignment: .leading, spacing: 8) {
-                                PhotoRow(
-                                    photo: photo,
-                                    noteCount: items.filter {
-                                        $0.photoId == photo.id && $0.themeId == selectedTheme.id
-                                    }.count
-                                )
-
-                                HStack {
-                                    Button {
-                                        editingLocationPhoto = photo
-                                    } label: {
-                                        Label(
-                                            photo.latitude == nil ? "場所を追加する" : "場所を変更する",
-                                            systemImage: photo.latitude == nil ? "mappin.and.ellipse" : "mappin"
-                                        )
-                                        .font(.caption)
-                                    }
-                                    .buttonStyle(.borderless)
-
-                                    Spacer()
-
-                                    Button {
-                                        openingPhoto = photo
-                                    } label: {
-                                        Label("開く", systemImage: "arrow.up.right")
-                                            .font(.caption.weight(.semibold))
-                                    }
-                                    .buttonStyle(.bordered)
-                                }
-                            }
-                        } else {
-                            PhotoRow(photo: photo, noteCount: 0)
-                        }
-                    }
-                    .onDelete(perform: deletePhotos)
-                    .onMove(perform: movePhotos)
-                }
-            } header: {
-                Text("場所写真")
-            }
+            headerSection
+            themeSection
+            reviewSection
+            photosSection
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(NotebookBackground())
         .navigationTitle(memorySet.name)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -189,6 +94,103 @@ struct MemorySetDetailView: View {
         }
     }
 
+    private var headerSection: some View {
+        Section {
+            MemorySetHeaderCard(
+                memorySet: memorySet,
+                photoCount: setPhotos.count,
+                themeCount: setThemes.count,
+                noteCount: headerNoteCount
+            )
+        }
+        .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 8, trailing: 16))
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+    }
+
+    private var themeSection: some View {
+        Section {
+            if setThemes.isEmpty {
+                Button("デフォルトテーマを作成") {
+                    createDefaultTheme()
+                }
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(setThemes) { theme in
+                            Button {
+                                selectedThemeId = theme.id
+                            } label: {
+                                ThemeChip(title: theme.name, isSelected: isSelected(theme))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+
+                HStack {
+                    Button("テーマ追加") {
+                        isAddingTheme = true
+                    }
+
+                    Spacer()
+
+                    Button("選択テーマを削除", role: .destructive) {
+                        deleteSelectedTheme()
+                    }
+                    .disabled(setThemes.count < 2 || selectedTheme == nil)
+                }
+            }
+        } header: {
+            Text("ノートの切り口")
+        }
+        .listRowBackground(Color.white.opacity(0.62))
+    }
+
+    @ViewBuilder
+    private var reviewSection: some View {
+        if let selectedTheme {
+            Section {
+                NavigationLink {
+                    ReviewView(memorySet: memorySet, theme: selectedTheme)
+                } label: {
+                    Label("メモをめぐる", systemImage: "play.circle")
+                }
+                .disabled(reviewItems(for: selectedTheme).isEmpty)
+            }
+            .listRowBackground(Color.white.opacity(0.62))
+        }
+    }
+
+    private var photosSection: some View {
+        Section {
+            if setPhotos.isEmpty {
+                ContentUnavailableView(
+                    "写真がありません",
+                    systemImage: "photo.on.rectangle",
+                    description: Text("この旅の道しるべになる写真を追加してください。")
+                )
+                .listRowBackground(Color.clear)
+            } else {
+                ForEach(setPhotos) { photo in
+                    PhotoRouteRow(
+                        photo: photo,
+                        noteCount: selectedTheme.map { noteCount(for: photo, theme: $0) } ?? 0,
+                        onEditLocation: { editingLocationPhoto = photo },
+                        onOpen: { openingPhoto = photo }
+                    )
+                }
+                .onDelete(perform: deletePhotos)
+                .onMove(perform: movePhotos)
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+            }
+        } header: {
+            Text("道しるべ写真")
+        }
+    }
+
     private func ensureThemeSelection() {
         guard !setThemes.isEmpty else {
             selectedThemeId = nil
@@ -197,6 +199,14 @@ struct MemorySetDetailView: View {
         if selectedTheme == nil {
             selectedThemeId = setThemes.first?.id
         }
+    }
+
+    private func isSelected(_ theme: MemoryTheme) -> Bool {
+        selectedTheme?.id == theme.id
+    }
+
+    private func noteCount(for photo: MemoryPhoto, theme: MemoryTheme) -> Int {
+        items.filter { $0.photoId == photo.id && $0.themeId == theme.id }.count
     }
 
     private func createDefaultTheme() {
@@ -272,6 +282,100 @@ struct MemorySetDetailView: View {
     }
 }
 
+private struct ThemeChip: View {
+    let title: String
+    let isSelected: Bool
+
+    var body: some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold))
+            .lineLimit(1)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(isSelected ? PalaceStyle.coral : .white.opacity(0.72), in: Capsule())
+            .foregroundStyle(isSelected ? .white : PalaceStyle.ink)
+            .overlay {
+                Capsule()
+                    .stroke(PalaceStyle.paperDeep.opacity(0.5), lineWidth: isSelected ? 0 : 1)
+            }
+    }
+}
+
+private struct MemorySetHeaderCard: View {
+    let memorySet: MemorySet
+    let photoCount: Int
+    let themeCount: Int
+    let noteCount: Int
+
+    var body: some View {
+        HStack(spacing: 14) {
+            NotebookHeroImage()
+                .frame(width: 108, height: 96)
+                .shadow(color: PalaceStyle.ink.opacity(0.12), radius: 8, y: 4)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(memorySet.name)
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(PalaceStyle.ink)
+                    .lineLimit(2)
+                Text("写真をたどって、頭の中に小さな散歩道を作ります。")
+                    .font(.caption)
+                    .foregroundStyle(PalaceStyle.mutedInk)
+                    .lineLimit(2)
+
+                HStack(spacing: 6) {
+                    NotebookLabel(text: "\(photoCount)", systemImage: "photo")
+                    NotebookLabel(text: "\(themeCount)", systemImage: "tag")
+                    NotebookLabel(text: "\(noteCount)", systemImage: "note.text")
+                }
+            }
+        }
+        .padding(12)
+        .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(PalaceStyle.paperDeep.opacity(0.42), lineWidth: 1)
+        }
+    }
+}
+
+private struct PhotoRouteRow: View {
+    let photo: MemoryPhoto
+    let noteCount: Int
+    let onEditLocation: () -> Void
+    let onOpen: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            PhotoRow(photo: photo, noteCount: noteCount)
+
+            HStack {
+                Button {
+                    onEditLocation()
+                } label: {
+                    Label(
+                        photo.latitude == nil ? "場所を追加する" : "場所を変更する",
+                        systemImage: photo.latitude == nil ? "mappin.and.ellipse" : "mappin"
+                    )
+                    .font(.caption)
+                }
+                .buttonStyle(.borderless)
+
+                Spacer()
+
+                Button {
+                    onOpen()
+                } label: {
+                    Label("開く", systemImage: "arrow.up.right")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+}
+
 private struct PhotoRow: View {
     let photo: MemoryPhoto
     let noteCount: Int
@@ -297,12 +401,18 @@ private struct PhotoRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(photo.title)
                     .font(.headline)
-                Label("\(noteCount)", systemImage: "note.text")
+                    .foregroundStyle(PalaceStyle.ink)
+                Label("\(noteCount) メモ", systemImage: "note.text")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(PalaceStyle.mutedInk)
             }
         }
-        .padding(.vertical, 4)
+        .padding(12)
+        .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(PalaceStyle.paperDeep.opacity(0.42), lineWidth: 1)
+        }
     }
 }
 

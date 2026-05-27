@@ -7,14 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */ = {isa = PBXBuildFile; fileRef = 5050C9EA85B8B1736C509818 /* memory_notebook_card.png */; };
 		288CFD86CEB9A13BB7C4C260 /* MindPalaceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */; };
 		51919BCD7420B75C29DAA614 /* ImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20328AB420EA87A3F11288DB /* ImageStore.swift */; };
 		60C92DB7573BAEA99E572591 /* PhotoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */; };
 		702CB63078808D6952643467 /* MemoryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD703F90EBF77D285585A7CC /* MemoryMapView.swift */; };
+		7DADF39D6F9670082E806ADB /* PalaceStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1A444DA9353A43AF90742B /* PalaceStyle.swift */; };
 		86B9436F98B999157009AA01 /* MemorySetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB0E77FBB25905F1EBD5063 /* MemorySetDetailView.swift */; };
 		938A8BE29D13712FDB13A04F /* SeedDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */; };
 		94213E47239D7482437DE8C7 /* gotanda_station.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 3F4F7F595E297A7E6C0474F5 /* gotanda_station.jpeg */; };
 		9C65FC51D9929E475D7382C3 /* gotanda_sidewalk.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 36E079C743506ACF0A27F24B /* gotanda_sidewalk.jpeg */; };
+		AA1E5600EB64D8F9220C31EE /* memory_notebook_hero.png in Resources */ = {isa = PBXBuildFile; fileRef = 9691A3BC2B4115F57DBE7117 /* memory_notebook_hero.png */; };
 		AB9B7102E5B82B20C7FCBCAF /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D6FBB682B61C4983AF33C3 /* CameraPicker.swift */; };
 		B7FC5EA4EA4B2466D0BC21DA /* MemoryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350DC7BF6AA07E61E0954225 /* MemoryModels.swift */; };
 		B981F4FC01BC16FC2C852893 /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3087B2519E3359C15F8D94D7 /* LocationProvider.swift */; };
@@ -36,12 +39,15 @@
 		36E079C743506ACF0A27F24B /* gotanda_sidewalk.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = gotanda_sidewalk.jpeg; sourceTree = "<group>"; };
 		3F4F7F595E297A7E6C0474F5 /* gotanda_station.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = gotanda_station.jpeg; sourceTree = "<group>"; };
 		4EB0E77FBB25905F1EBD5063 /* MemorySetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemorySetDetailView.swift; sourceTree = "<group>"; };
+		5050C9EA85B8B1736C509818 /* memory_notebook_card.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = memory_notebook_card.png; sourceTree = "<group>"; };
 		57D1E38EDC98385C159DA1C2 /* gotanda_road.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = gotanda_road.jpeg; sourceTree = "<group>"; };
 		702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindPalaceApp.swift; sourceTree = "<group>"; };
 		87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoEditorView.swift; sourceTree = "<group>"; };
+		9691A3BC2B4115F57DBE7117 /* memory_notebook_hero.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = memory_notebook_hero.png; sourceTree = "<group>"; };
 		ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEditorView.swift; sourceTree = "<group>"; };
 		BD703F90EBF77D285585A7CC /* MemoryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapView.swift; sourceTree = "<group>"; };
 		C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		DB1A444DA9353A43AF90742B /* PalaceStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PalaceStyle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -84,6 +90,7 @@
 		90148F28695368403574DB84 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F3E6E630FE6A5B65E113D463 /* Artwork */,
 				485B4973B1F335AFA232B488 /* SeedImages */,
 			);
 			path = Resources;
@@ -97,6 +104,7 @@
 				ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */,
 				BD703F90EBF77D285585A7CC /* MemoryMapView.swift */,
 				4EB0E77FBB25905F1EBD5063 /* MemorySetDetailView.swift */,
+				DB1A444DA9353A43AF90742B /* PalaceStyle.swift */,
 				87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */,
 				C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */,
 			);
@@ -122,6 +130,15 @@
 				1F520C499840A3BC6065F1C5 /* MindPalace.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F3E6E630FE6A5B65E113D463 /* Artwork */ = {
+			isa = PBXGroup;
+			children = (
+				5050C9EA85B8B1736C509818 /* memory_notebook_card.png */,
+				9691A3BC2B4115F57DBE7117 /* memory_notebook_hero.png */,
+			);
+			path = Artwork;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -183,6 +200,8 @@
 				D47B28423FAB9A09EDD30DF9 /* gotanda_road.jpeg in Resources */,
 				9C65FC51D9929E475D7382C3 /* gotanda_sidewalk.jpeg in Resources */,
 				94213E47239D7482437DE8C7 /* gotanda_station.jpeg in Resources */,
+				17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */,
+				AA1E5600EB64D8F9220C31EE /* memory_notebook_hero.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +221,7 @@
 				B7FC5EA4EA4B2466D0BC21DA /* MemoryModels.swift in Sources */,
 				86B9436F98B999157009AA01 /* MemorySetDetailView.swift in Sources */,
 				288CFD86CEB9A13BB7C4C260 /* MindPalaceApp.swift in Sources */,
+				7DADF39D6F9670082E806ADB /* PalaceStyle.swift in Sources */,
 				60C92DB7573BAEA99E572591 /* PhotoEditorView.swift in Sources */,
 				F4D534CA8584BD76E5D92EB6 /* ReviewView.swift in Sources */,
 				938A8BE29D13712FDB13A04F /* SeedDataService.swift in Sources */,

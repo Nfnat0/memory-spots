@@ -6,6 +6,7 @@ struct MindPalaceApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
+                .tint(PalaceStyle.coral)
         }
         .modelContainer(for: [
             MemorySet.self,
