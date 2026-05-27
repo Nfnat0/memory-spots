@@ -29,7 +29,7 @@ enum ImageStore {
         guard let url = try? imagesDirectory().appending(path: fileName) else {
             return nil
         }
-        return UIImage(contentsOfFile: url.path())
+        return UIImage(contentsOfFile: url.path(percentEncoded: false))
     }
 
     static func deleteImage(named fileName: String) {
@@ -47,7 +47,7 @@ enum ImageStore {
             create: true
         )
         let directory = baseURL.appending(path: folderName, directoryHint: .isDirectory)
-        if !FileManager.default.fileExists(atPath: directory.path()) {
+        if !FileManager.default.fileExists(atPath: directory.path(percentEncoded: false)) {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         }
         return directory
