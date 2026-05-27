@@ -35,12 +35,24 @@ struct HomeView: View {
     private var setList: some View {
         NavigationStack {
             List {
+                Section {
+                    AlbumHeroCard(
+                        setCount: memorySets.count,
+                        photoCount: photos.count,
+                        themeCount: themes.count
+                    )
+                }
+                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 10, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+
                 if memorySets.isEmpty {
                     ContentUnavailableView(
                         "アルバムがありません",
-                        systemImage: "photo.on.rectangle",
-                        description: Text("写真とメモをまとめるテーマを作れます。")
+                        systemImage: "map",
+                        description: Text("写真を道しるべにして、思い出すための小さな旅を作れます。")
                     )
+                    .listRowBackground(Color.clear)
                 } else {
                     ForEach(memorySets) { memorySet in
                         NavigationLink {
@@ -52,6 +64,9 @@ struct HomeView: View {
                                 themeCount: themes.filter { $0.setId == memorySet.id }.count
                             )
                         }
+                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                         .swipeActions(edge: .leading) {
                             Button("名前変更") {
                                 renamingSet = memorySet
@@ -66,7 +81,10 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("アルバム")
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(NotebookBackground())
+            .navigationTitle("旅のアルバム")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -127,23 +145,73 @@ struct HomeView: View {
     }
 }
 
+private struct AlbumHeroCard: View {
+    let setCount: Int
+    let photoCount: Int
+    let themeCount: Int
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            NotebookHeroImage()
+                .frame(height: 170)
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("写真の道を、記憶のノートに。")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(PalaceStyle.ink)
+                    .lineLimit(2)
+
+                HStack(spacing: 8) {
+                    NotebookLabel(text: "\(setCount) アルバム", systemImage: "rectangle.stack")
+                    NotebookLabel(text: "\(photoCount) 写真", systemImage: "photo")
+                    NotebookLabel(text: "\(themeCount) テーマ", systemImage: "tag")
+                }
+            }
+            .padding(14)
+        }
+        .background(.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.white.opacity(0.62), lineWidth: 1)
+        }
+        .shadow(color: PalaceStyle.ink.opacity(0.12), radius: 12, y: 6)
+    }
+}
+
 private struct MemorySetRow: View {
     let memorySet: MemorySet
     let photoCount: Int
     let themeCount: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(memorySet.name)
-                .font(.headline)
-            HStack(spacing: 12) {
-                Label("\(photoCount)", systemImage: "photo")
-                Label("\(themeCount)", systemImage: "tag")
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(PalaceStyle.sage.opacity(0.16))
+                Image(systemName: "map.fill")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(PalaceStyle.sage)
             }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .frame(width: 52, height: 52)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(memorySet.name)
+                    .font(.headline)
+                    .foregroundStyle(PalaceStyle.ink)
+                HStack(spacing: 12) {
+                    Label("\(photoCount) 写真", systemImage: "photo")
+                    Label("\(themeCount) テーマ", systemImage: "tag")
+                }
+                .font(.subheadline)
+                .foregroundStyle(PalaceStyle.mutedInk)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(12)
+        .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(PalaceStyle.paperDeep.opacity(0.42), lineWidth: 1)
+        }
     }
 }
 
