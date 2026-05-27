@@ -1,0 +1,35 @@
+name: MindPalace
+options:
+  bundleIdPrefix: com.nf
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: 5.9
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: 1
+targets:
+  MindPalace:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - MindPalace
+    resources:
+      - MindPalace/Resources
+    info:
+      path: MindPalace/Info.plist
+      properties:
+        CFBundleDisplayName: Mind Palace
+        NSCameraUsageDescription: Mind Palace uses the camera to add place photos to memory sets.
+        NSLocationWhenInUseUsageDescription: Mind Palace can attach your current location to newly captured place photos.
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight

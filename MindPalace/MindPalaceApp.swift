@@ -1,0 +1,18 @@
+import SwiftData
+import SwiftUI
+
+@main
+struct MindPalaceApp: App {
+    var body: some Scene {
+        WindowGroup {
+            HomeView()
+        }
+        .modelContainer(for: [
+            MemorySet.self,
+            MemoryPhoto.self,
+            MemoryTheme.self,
+            MemoryItem.self,
+            ReviewResult.self
+        ])
+    }
+}
