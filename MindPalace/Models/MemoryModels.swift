@@ -70,8 +70,14 @@ final class MemoryItem: Identifiable {
     var id: UUID
     var photoId: UUID
     var themeId: UUID
+    var type: String = MemoryItemType.stickyText.rawValue
     var frontText: String
     var backText: String
+    var colorName: String?
+    var iconName: String?
+    var imagePath: String?
+    var rotation: Double = 0
+    var scale: Double = 1
     var x: Double
     var y: Double
     var orderIndex: Int
@@ -81,8 +87,14 @@ final class MemoryItem: Identifiable {
     init(
         photoId: UUID,
         themeId: UUID,
+        type: MemoryItemType = .stickyText,
         frontText: String,
         backText: String,
+        colorName: String? = nil,
+        iconName: String? = nil,
+        imagePath: String? = nil,
+        rotation: Double = 0,
+        scale: Double = 1,
         x: Double,
         y: Double,
         orderIndex: Int
@@ -90,13 +102,59 @@ final class MemoryItem: Identifiable {
         self.id = UUID()
         self.photoId = photoId
         self.themeId = themeId
+        self.type = type.rawValue
         self.frontText = frontText
         self.backText = backText
+        self.colorName = colorName
+        self.iconName = iconName
+        self.imagePath = imagePath
+        self.rotation = rotation
+        self.scale = scale
         self.x = x
         self.y = y
         self.orderIndex = orderIndex
         self.createdAt = Date()
         self.updatedAt = Date()
+    }
+}
+
+enum MemoryItemType: String, CaseIterable, Identifiable, Codable {
+    case stickyText
+    case image
+    case icon
+    case numberLabel
+    case arrow
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .stickyText:
+            "付箋"
+        case .image:
+            "画像"
+        case .icon:
+            "アイコン"
+        case .numberLabel:
+            "番号"
+        case .arrow:
+            "矢印"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .stickyText:
+            "note.text"
+        case .image:
+            "photo"
+        case .icon:
+            "star.fill"
+        case .numberLabel:
+            "number.circle.fill"
+        case .arrow:
+            "arrow.right"
+        }
     }
 }
 

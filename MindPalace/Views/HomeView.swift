@@ -14,13 +14,32 @@ struct HomeView: View {
     @State private var renamingSet: MemorySet?
 
     var body: some View {
+        TabView {
+            NavigationStack {
+                MemoryMapView()
+            }
+            .tabItem {
+                Label("記憶マップ", systemImage: "map")
+            }
+
+            setList
+                .tabItem {
+                    Label("アルバム", systemImage: "photo.stack")
+                }
+        }
+        .task {
+            SeedDataService.seedAWSExamSetIfNeeded(modelContext: modelContext)
+        }
+    }
+
+    private var setList: some View {
         NavigationStack {
             List {
                 if memorySets.isEmpty {
                     ContentUnavailableView(
-                        "記憶セットがありません",
+                        "アルバムがありません",
                         systemImage: "photo.on.rectangle",
-                        description: Text("場所写真をまとめるセットを作成してください。")
+                        description: Text("写真とメモをまとめるテーマを作れます。")
                     )
                 } else {
                     ForEach(memorySets) { memorySet in
@@ -47,18 +66,18 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("Memory Palace")
+            .navigationTitle("アルバム")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isAddingSet = true
                     } label: {
-                        Label("記憶セットを追加", systemImage: "plus")
+                        Label("アルバムを追加", systemImage: "plus")
                     }
                 }
             }
             .sheet(isPresented: $isAddingSet) {
-                SetNameEditor(title: "記憶セットを作成", initialName: "") { name in
+                SetNameEditor(title: "アルバムを作成", initialName: "") { name in
                     createSet(named: name)
                 }
                 .presentationDetents([.medium])
@@ -70,9 +89,6 @@ struct HomeView: View {
                     try? modelContext.save()
                 }
                 .presentationDetents([.medium])
-            }
-            .task {
-                SeedDataService.seedAWSExamSetIfNeeded(modelContext: modelContext)
             }
         }
     }

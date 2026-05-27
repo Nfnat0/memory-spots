@@ -23,6 +23,7 @@ targets:
         CFBundleDisplayName: Mind Palace
         NSCameraUsageDescription: Mind Palace uses the camera to add place photos to memory sets.
         NSLocationWhenInUseUsageDescription: Mind Palace can attach your current location to newly captured place photos.
+        NSPhotoLibraryUsageDescription: Mind Palace can read photo location metadata when you add place photos from your library.
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
