@@ -10,6 +10,7 @@
 		288CFD86CEB9A13BB7C4C260 /* MindPalaceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */; };
 		51919BCD7420B75C29DAA614 /* ImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20328AB420EA87A3F11288DB /* ImageStore.swift */; };
 		60C92DB7573BAEA99E572591 /* PhotoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */; };
+		702CB63078808D6952643467 /* MemoryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD703F90EBF77D285585A7CC /* MemoryMapView.swift */; };
 		86B9436F98B999157009AA01 /* MemorySetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB0E77FBB25905F1EBD5063 /* MemorySetDetailView.swift */; };
 		938A8BE29D13712FDB13A04F /* SeedDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */; };
 		94213E47239D7482437DE8C7 /* gotanda_station.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 3F4F7F595E297A7E6C0474F5 /* gotanda_station.jpeg */; };
@@ -20,12 +21,13 @@
 		D47B28423FAB9A09EDD30DF9 /* gotanda_road.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 57D1E38EDC98385C159DA1C2 /* gotanda_road.jpeg */; };
 		D9089C8E9F258B4E547ECF4F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7254FA0787EA207C87E000 /* HomeView.swift */; };
 		F4D534CA8584BD76E5D92EB6 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */; };
+		FB26FA7520718936AD0937AF /* LocationEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		03D6FBB682B61C4983AF33C3 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		1C7254FA0787EA207C87E000 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20328AB420EA87A3F11288DB /* ImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStore.swift; sourceTree = "<group>"; };
 		24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataService.swift; sourceTree = "<group>"; };
 		29A661D21CEBD2F9D27F8127 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -37,6 +39,8 @@
 		57D1E38EDC98385C159DA1C2 /* gotanda_road.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = gotanda_road.jpeg; sourceTree = "<group>"; };
 		702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindPalaceApp.swift; sourceTree = "<group>"; };
 		87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoEditorView.swift; sourceTree = "<group>"; };
+		ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEditorView.swift; sourceTree = "<group>"; };
+		BD703F90EBF77D285585A7CC /* MemoryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapView.swift; sourceTree = "<group>"; };
 		C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -90,6 +94,8 @@
 			children = (
 				03D6FBB682B61C4983AF33C3 /* CameraPicker.swift */,
 				1C7254FA0787EA207C87E000 /* HomeView.swift */,
+				ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */,
+				BD703F90EBF77D285585A7CC /* MemoryMapView.swift */,
 				4EB0E77FBB25905F1EBD5063 /* MemorySetDetailView.swift */,
 				87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */,
 				C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */,
@@ -147,6 +153,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = F7C9A695EC87DF55115684AC /* Build configuration list for PBXProject "MindPalace" */;
 			developmentRegion = en;
@@ -188,7 +196,9 @@
 				AB9B7102E5B82B20C7FCBCAF /* CameraPicker.swift in Sources */,
 				D9089C8E9F258B4E547ECF4F /* HomeView.swift in Sources */,
 				51919BCD7420B75C29DAA614 /* ImageStore.swift in Sources */,
+				FB26FA7520718936AD0937AF /* LocationEditorView.swift in Sources */,
 				B981F4FC01BC16FC2C852893 /* LocationProvider.swift in Sources */,
+				702CB63078808D6952643467 /* MemoryMapView.swift in Sources */,
 				B7FC5EA4EA4B2466D0BC21DA /* MemoryModels.swift in Sources */,
 				86B9436F98B999157009AA01 /* MemorySetDetailView.swift in Sources */,
 				288CFD86CEB9A13BB7C4C260 /* MindPalaceApp.swift in Sources */,
@@ -271,14 +281,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 3Z2GBKFGF5;
 				INFOPLIST_FILE = MindPalace/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalace;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalace;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -347,14 +356,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 3Z2GBKFGF5;
 				INFOPLIST_FILE = MindPalace/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalace;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalace;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

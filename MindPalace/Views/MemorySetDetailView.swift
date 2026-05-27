@@ -1,3 +1,5 @@
+import CoreLocation
+import Photos
 import PhotosUI
 import SwiftData
 import SwiftUI
@@ -16,6 +18,8 @@ struct MemorySetDetailView: View {
     @State private var selectedThemeId: UUID?
     @State private var isAddingTheme = false
     @State private var isAddingPhoto = false
+    @State private var editingLocationPhoto: MemoryPhoto?
+    @State private var openingPhoto: MemoryPhoto?
 
     private var setPhotos: [MemoryPhoto] {
         photos
@@ -42,9 +46,25 @@ struct MemorySetDetailView: View {
                         createDefaultTheme()
                     }
                 } else {
-                    Picker("現在のテーマ", selection: selectedThemeBinding) {
-                        ForEach(setThemes) { theme in
-                            Text(theme.name).tag(theme.id)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(setThemes) { theme in
+                                Button {
+                                    selectedThemeId = theme.id
+                                } label: {
+                                    Text(theme.name)
+                                        .font(.subheadline.weight(.semibold))
+                                        .lineLimit(1)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            selectedTheme?.id == theme.id ? Color.accentColor : Color(uiColor: .secondarySystemBackground),
+                                            in: Capsule()
+                                        )
+                                        .foregroundStyle(selectedTheme?.id == theme.id ? .white : .primary)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
 
@@ -70,7 +90,7 @@ struct MemorySetDetailView: View {
                     NavigationLink {
                         ReviewView(memorySet: memorySet, theme: selectedTheme)
                     } label: {
-                        Label("復習を開始", systemImage: "play.circle")
+                        Label("メモをめぐる", systemImage: "play.circle")
                     }
                     .disabled(reviewItems(for: selectedTheme).isEmpty)
                 }
@@ -86,15 +106,36 @@ struct MemorySetDetailView: View {
                 } else {
                     ForEach(setPhotos) { photo in
                         if let selectedTheme {
-                            NavigationLink {
-                                PhotoEditorView(photo: photo, theme: selectedTheme)
-                            } label: {
+                            VStack(alignment: .leading, spacing: 8) {
                                 PhotoRow(
                                     photo: photo,
                                     noteCount: items.filter {
                                         $0.photoId == photo.id && $0.themeId == selectedTheme.id
                                     }.count
                                 )
+
+                                HStack {
+                                    Button {
+                                        editingLocationPhoto = photo
+                                    } label: {
+                                        Label(
+                                            photo.latitude == nil ? "場所を追加する" : "場所を変更する",
+                                            systemImage: photo.latitude == nil ? "mappin.and.ellipse" : "mappin"
+                                        )
+                                        .font(.caption)
+                                    }
+                                    .buttonStyle(.borderless)
+
+                                    Spacer()
+
+                                    Button {
+                                        openingPhoto = photo
+                                    } label: {
+                                        Label("開く", systemImage: "arrow.up.right")
+                                            .font(.caption.weight(.semibold))
+                                    }
+                                    .buttonStyle(.bordered)
+                                }
                             }
                         } else {
                             PhotoRow(photo: photo, noteCount: 0)
@@ -126,6 +167,13 @@ struct MemorySetDetailView: View {
         .onChange(of: setThemes.map(\.id)) {
             ensureThemeSelection()
         }
+        .navigationDestination(item: $openingPhoto) { photo in
+            if let selectedTheme {
+                PhotoEditorView(photo: photo, theme: selectedTheme)
+            } else {
+                ContentUnavailableView("テーマがありません", systemImage: "tag")
+            }
+        }
         .sheet(isPresented: $isAddingTheme) {
             SetNameEditor(title: "テーマを作成", initialName: "") { name in
                 createTheme(named: name)
@@ -136,13 +184,9 @@ struct MemorySetDetailView: View {
             AddPhotoSheet(memorySet: memorySet, nextOrderIndex: setPhotos.count)
                 .presentationDetents([.medium, .large])
         }
-    }
-
-    private var selectedThemeBinding: Binding<UUID> {
-        Binding(
-            get: { selectedTheme?.id ?? setThemes.first?.id ?? UUID() },
-            set: { selectedThemeId = $0 }
-        )
+        .sheet(item: $editingLocationPhoto) { photo in
+            LocationEditorView(photo: photo)
+        }
     }
 
     private func ensureThemeSelection() {
@@ -291,8 +335,15 @@ private struct AddPhotoSheet: View {
 
                 if let coordinate = locationProvider.latestCoordinate {
                     Section("位置情報") {
+                        Text("カメラ撮影ではこの場所に保存します。")
+                            .foregroundStyle(.secondary)
                         Text("緯度 \(coordinate.latitude.formatted(.number.precision(.fractionLength(4))))")
                         Text("経度 \(coordinate.longitude.formatted(.number.precision(.fractionLength(4))))")
+                    }
+                } else {
+                    Section("位置情報") {
+                        Text("場所なしでも写真を保存できます。あとから地図で場所を追加できます。")
+                            .foregroundStyle(.secondary)
                     }
                 }
 
@@ -324,7 +375,7 @@ private struct AddPhotoSheet: View {
             }
             .sheet(isPresented: $isShowingCamera) {
                 CameraPicker { image in
-                    save(image)
+                    save(image, coordinate: locationProvider.latestCoordinate)
                 }
             }
         }
@@ -339,16 +390,15 @@ private struct AddPhotoSheet: View {
                 errorMessage = "画像を読み込めませんでした。"
                 return
             }
-            save(image)
+            save(image, coordinate: libraryCoordinate(for: item))
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    private func save(_ image: UIImage) {
+    private func save(_ image: UIImage, coordinate: CLLocationCoordinate2D?) {
         do {
             let imagePath = try ImageStore.saveImage(image)
-            let coordinate = locationProvider.latestCoordinate
             let photo = MemoryPhoto(
                 setId: memorySet.id,
                 title: "場所写真 \(nextOrderIndex + 1)",
@@ -364,5 +414,13 @@ private struct AddPhotoSheet: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func libraryCoordinate(for item: PhotosPickerItem) -> CLLocationCoordinate2D? {
+        guard let identifier = item.itemIdentifier else {
+            return nil
+        }
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: [identifier], options: nil)
+        return result.firstObject?.location?.coordinate
     }
 }

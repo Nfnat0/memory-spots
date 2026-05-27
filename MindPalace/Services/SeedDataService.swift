@@ -11,7 +11,8 @@ enum SeedDataService {
         )
         descriptor.fetchLimit = 1
 
-        guard (try? modelContext.fetch(descriptor))?.isEmpty != false else {
+        if let existingSet = try? modelContext.fetch(descriptor).first {
+            updateSeedPhotoLocationsIfNeeded(memorySet: existingSet, modelContext: modelContext)
             return
         }
 
@@ -42,6 +43,8 @@ enum SeedDataService {
                 setId: memorySet.id,
                 title: photoSeed.title,
                 imagePath: imagePath,
+                latitude: photoSeed.latitude,
+                longitude: photoSeed.longitude,
                 orderIndex: photoIndex
             )
             modelContext.insert(photo)
@@ -63,11 +66,40 @@ enum SeedDataService {
 
         try modelContext.save()
     }
+
+    @MainActor
+    private static func updateSeedPhotoLocationsIfNeeded(memorySet: MemorySet, modelContext: ModelContext) {
+        let setId = memorySet.id
+        let descriptor = FetchDescriptor<MemoryPhoto>(
+            predicate: #Predicate { $0.setId == setId }
+        )
+        guard let photos = try? modelContext.fetch(descriptor) else {
+            return
+        }
+
+        var didUpdate = false
+        for photoSeed in photoSeeds {
+            guard let photo = photos.first(where: { $0.title == photoSeed.title }) else {
+                continue
+            }
+            if photo.latitude == nil || photo.longitude == nil {
+                photo.latitude = photoSeed.latitude
+                photo.longitude = photoSeed.longitude
+                didUpdate = true
+            }
+        }
+
+        if didUpdate {
+            try? modelContext.save()
+        }
+    }
 }
 
 private struct SeedPhoto {
     let title: String
     let resourceName: String
+    let latitude: Double
+    let longitude: Double
     let items: [SeedItem]
 }
 
@@ -82,6 +114,8 @@ private let photoSeeds: [SeedPhoto] = [
     SeedPhoto(
         title: "五反田の歩道",
         resourceName: "gotanda_sidewalk",
+        latitude: 35.6259,
+        longitude: 139.7242,
         items: [
             SeedItem(
                 front: "AWS Well-Architected",
@@ -106,6 +140,8 @@ private let photoSeeds: [SeedPhoto] = [
     SeedPhoto(
         title: "道路沿いの柵",
         resourceName: "gotanda_road",
+        latitude: 35.6261,
+        longitude: 139.7238,
         items: [
             SeedItem(
                 front: "VPCの基本",
@@ -136,6 +172,8 @@ private let photoSeeds: [SeedPhoto] = [
     SeedPhoto(
         title: "五反田駅入口",
         resourceName: "gotanda_station",
+        latitude: 35.6264,
+        longitude: 139.7235,
         items: [
             SeedItem(
                 front: "S3ストレージクラス",
