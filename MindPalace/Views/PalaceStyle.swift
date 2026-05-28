@@ -20,12 +20,16 @@ struct NotebookBackground: View {
                 endPoint: .bottomTrailing
             )
 
-            if let image = ArtworkLoader.image(named: "memory_notebook_hero") {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .opacity(0.16)
-                    .blur(radius: 0.2)
+            GeometryReader { proxy in
+                if let image = ArtworkLoader.image(named: "memory_notebook_hero") {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .clipped()
+                        .opacity(0.16)
+                        .blur(radius: 0.2)
+                }
             }
         }
         .ignoresSafeArea()

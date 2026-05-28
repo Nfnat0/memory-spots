@@ -2,12 +2,11 @@ import Foundation
 import SwiftData
 
 enum SeedDataService {
-    private static let awsSetName = "AWS資格 五反田ルート"
-
     @MainActor
     static func seedAWSExamSetIfNeeded(modelContext: ModelContext) {
+        let localizedSetName = String(localized: "My Room & Park")
         var descriptor = FetchDescriptor<MemorySet>(
-            predicate: #Predicate { $0.name == awsSetName }
+            predicate: #Predicate { $0.name == localizedSetName }
         )
         descriptor.fetchLimit = 1
 
@@ -17,19 +16,23 @@ enum SeedDataService {
         }
 
         do {
-            try seedAWSExamSet(modelContext: modelContext)
+            try seedDefaultSet(modelContext: modelContext)
         } catch {
-            assertionFailure("Failed to seed AWS exam set: \(error)")
+            assertionFailure("Failed to seed default set: \(error)")
         }
     }
 
     @MainActor
-    private static func seedAWSExamSet(modelContext: ModelContext) throws {
+    private static func seedDefaultSet(modelContext: ModelContext) throws {
         let memorySet = MemorySet(
-            name: awsSetName,
-            detail: "指定された五反田周辺の写真を使ったAWS資格試験用の記憶セット。"
+            name: String(localized: "My Room & Park"),
+            detail: String(localized: "A sample memory set using familiar everyday spaces (My Room, Desk Setup, Local Park).")
         )
-        let theme = MemoryTheme(setId: memorySet.id, name: "AWS資格", colorName: "yellow")
+        let theme = MemoryTheme(
+            setId: memorySet.id,
+            name: String(localized: "Grocery List"),
+            colorName: "yellow"
+        )
 
         modelContext.insert(memorySet)
         modelContext.insert(theme)
@@ -41,7 +44,7 @@ enum SeedDataService {
             )
             let photo = MemoryPhoto(
                 setId: memorySet.id,
-                title: photoSeed.title,
+                title: String(localized: photoSeed.titleKey),
                 imagePath: imagePath,
                 latitude: photoSeed.latitude,
                 longitude: photoSeed.longitude,
@@ -54,8 +57,8 @@ enum SeedDataService {
                     MemoryItem(
                         photoId: photo.id,
                         themeId: theme.id,
-                        frontText: itemSeed.front,
-                        backText: itemSeed.back,
+                        frontText: String(localized: itemSeed.frontKey),
+                        backText: String(localized: itemSeed.backKey),
                         x: itemSeed.x,
                         y: itemSeed.y,
                         orderIndex: itemIndex
@@ -79,7 +82,8 @@ enum SeedDataService {
 
         var didUpdate = false
         for photoSeed in photoSeeds {
-            guard let photo = photos.first(where: { $0.title == photoSeed.title }) else {
+            let title = String(localized: photoSeed.titleKey)
+            guard let photo = photos.first(where: { $0.title == title }) else {
                 continue
             }
             if photo.latitude == nil || photo.longitude == nil {
@@ -96,7 +100,7 @@ enum SeedDataService {
 }
 
 private struct SeedPhoto {
-    let title: String
+    let titleKey: LocalizedStringResource
     let resourceName: String
     let latitude: Double
     let longitude: Double
@@ -104,106 +108,76 @@ private struct SeedPhoto {
 }
 
 private struct SeedItem {
-    let front: String
-    let back: String
+    let frontKey: LocalizedStringResource
+    let backKey: LocalizedStringResource
     let x: Double
     let y: Double
 }
 
 private let photoSeeds: [SeedPhoto] = [
     SeedPhoto(
-        title: "五反田の歩道",
-        resourceName: "gotanda_sidewalk",
-        latitude: 35.6259,
-        longitude: 139.7242,
+        titleKey: "My Room",
+        resourceName: "my_room",
+        latitude: 37.7749,
+        longitude: -122.4194,
         items: [
             SeedItem(
-                front: "AWS Well-Architected",
-                back: "6本柱: 運用上の優秀性、セキュリティ、信頼性、パフォーマンス効率、コスト最適化、持続可能性。",
-                x: 0.24,
-                y: 0.74
+                frontKey: "Milk",
+                backKey: "Buy fresh milk from the grocery store.",
+                x: 0.25,
+                y: 0.7
             ),
             SeedItem(
-                front: "責任共有モデル",
-                back: "AWSはクラウドのセキュリティ、利用者はクラウド内のセキュリティ。OS、データ、IAM、ネットワーク設定は主に利用者側。",
-                x: 0.52,
-                y: 0.46
+                frontKey: "Apples",
+                backKey: "Get 4 red organic apples.",
+                x: 0.5,
+                y: 0.45
             ),
             SeedItem(
-                front: "IAM最小権限",
-                back: "必要な操作だけを許可する。ユーザーへ直接権限を盛りすぎず、グループ/ロール/ポリシーで管理する。",
-                x: 0.69,
-                y: 0.24
+                frontKey: "Bread",
+                backKey: "Whole wheat bread for toast.",
+                x: 0.7,
+                y: 0.25
             )
         ]
     ),
     SeedPhoto(
-        title: "道路沿いの柵",
-        resourceName: "gotanda_road",
-        latitude: 35.6261,
-        longitude: 139.7238,
+        titleKey: "Desk Setup",
+        resourceName: "desk_setup",
+        latitude: 37.7752,
+        longitude: -122.4198,
         items: [
             SeedItem(
-                front: "VPCの基本",
-                back: "VPCは論理的に分離されたネットワーク。サブネット、ルートテーブル、Internet Gateway、NAT Gatewayで通信経路を設計する。",
-                x: 0.28,
-                y: 0.62
+                frontKey: "Coffee Beans",
+                backKey: "Medium roast coffee beans.",
+                x: 0.3,
+                y: 0.6
             ),
             SeedItem(
-                front: "Security Group",
-                back: "インスタンス単位のステートフルな仮想ファイアウォール。許可ルールだけを書く。戻り通信は自動的に許可される。",
-                x: 0.51,
-                y: 0.38
-            ),
-            SeedItem(
-                front: "ALB / Auto Scaling",
-                back: "ALBでHTTP/HTTPSを分散し、Auto Scalingで需要に応じて台数を調整する。可用性と弾力性の定番構成。",
-                x: 0.72,
-                y: 0.24
-            ),
-            SeedItem(
-                front: "Route 53",
-                back: "DNSサービス。加重、レイテンシー、フェイルオーバーなどのルーティングポリシーを選べる。",
-                x: 0.79,
-                y: 0.68
+                frontKey: "Notebook",
+                backKey: "A5 pocket notebook for ideas.",
+                x: 0.6,
+                y: 0.35
             )
         ]
     ),
     SeedPhoto(
-        title: "五反田駅入口",
-        resourceName: "gotanda_station",
-        latitude: 35.6264,
-        longitude: 139.7235,
+        titleKey: "Local Park",
+        resourceName: "local_park",
+        latitude: 37.7755,
+        longitude: -122.4202,
         items: [
             SeedItem(
-                front: "S3ストレージクラス",
-                back: "頻繁アクセスはStandard、低頻度はStandard-IA/One Zone-IA、アーカイブはGlacier系。ライフサイクルで移行できる。",
-                x: 0.26,
-                y: 0.82
+                frontKey: "Water Bottle",
+                backKey: "Bring water bottle for hydration.",
+                x: 0.25,
+                y: 0.8
             ),
             SeedItem(
-                front: "RDS Multi-AZ",
-                back: "高可用性のため別AZにスタンバイを置く。読み取り性能向上はRead Replica、障害対策はMulti-AZ。",
-                x: 0.48,
-                y: 0.52
-            ),
-            SeedItem(
-                front: "DynamoDB",
-                back: "フルマネージドNoSQL。キー設計が重要。DAXは読み取りキャッシュ、Global Tablesはマルチリージョン複製。",
-                x: 0.63,
-                y: 0.42
-            ),
-            SeedItem(
-                front: "CloudWatch",
-                back: "メトリクス、ログ、アラームを扱う監視サービス。しきい値超過でSNS通知やAuto Scaling連携ができる。",
-                x: 0.74,
-                y: 0.18
-            ),
-            SeedItem(
-                front: "CloudTrail",
-                back: "AWS API操作履歴を記録する。誰が、いつ、何をしたかの監査に使う。セキュリティ問題の調査でも重要。",
-                x: 0.82,
-                y: 0.75
+                frontKey: "Dog Food",
+                backKey: "Pick up food for the puppy.",
+                x: 0.5,
+                y: 0.5
             )
         ]
     )

@@ -12,6 +12,7 @@ struct HomeView: View {
 
     @State private var isAddingSet = false
     @State private var renamingSet: MemorySet?
+    @AppStorage("hasCompletedTutorial") private var hasCompletedTutorial = false
 
     var body: some View {
         TabView {
@@ -29,6 +30,12 @@ struct HomeView: View {
         }
         .task {
             SeedDataService.seedAWSExamSetIfNeeded(modelContext: modelContext)
+        }
+        .sheet(isPresented: Binding(get: { !hasCompletedTutorial }, set: { _ in })) {
+            TutorialView {
+                hasCompletedTutorial = true
+            }
+            .interactiveDismissDisabled()
         }
     }
 

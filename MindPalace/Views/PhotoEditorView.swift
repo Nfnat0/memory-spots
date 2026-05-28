@@ -17,6 +17,37 @@ struct PhotoEditorView: View {
     @State private var isImagePickerPresented = false
     @State private var selectedImageItem: PhotosPickerItem?
 
+    // Zoom & Pan states
+    @State private var zoomScale: CGFloat = 1.0
+    @State private var lastZoomScale: CGFloat = 1.0
+    @State private var panOffset: CGSize = .zero
+    @State private var lastPanOffset: CGSize = .zero
+
+    private var magnification: some Gesture {
+        MagnificationGesture()
+            .onChanged { val in
+                let newScale = lastZoomScale * val
+                zoomScale = min(max(newScale, 1.0), 4.0)
+            }
+            .onEnded { val in
+                lastZoomScale = zoomScale
+            }
+    }
+
+    private var panGesture: some Gesture {
+        DragGesture()
+            .onChanged { val in
+                guard zoomScale > 1.0 else { return }
+                panOffset = CGSize(
+                    width: lastPanOffset.width + val.translation.width,
+                    height: lastPanOffset.height + val.translation.height
+                )
+            }
+            .onEnded { val in
+                lastPanOffset = panOffset
+            }
+    }
+
     private var themeItems: [MemoryItem] {
         items
             .filter { $0.photoId == photo.id && $0.themeId == theme.id }
@@ -33,29 +64,51 @@ struct PhotoEditorView: View {
                         PalaceStyle.paper.opacity(0.58)
                             .ignoresSafeArea()
 
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: imageFrame.width, height: imageFrame.height)
-                            .position(x: imageFrame.midX, y: imageFrame.midY)
+                        // A canvas to group the image and the items together, so they scale/offset as one.
+                        ZStack(alignment: .topLeading) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: imageFrame.width, height: imageFrame.height)
+                                .position(x: imageFrame.midX, y: imageFrame.midY)
 
-                        ForEach(themeItems) { item in
-                            MemoryItemView(item: item)
-                                .position(
-                                    x: imageFrame.minX + item.x * imageFrame.width,
-                                    y: imageFrame.minY + item.y * imageFrame.height
-                                )
-                                .scaleEffect(item.scale)
-                                .rotationEffect(.degrees(item.rotation))
-                                .gesture(dragGesture(for: item, in: imageFrame))
-                                .onTapGesture {
-                                    editingItem = item
-                                }
-                                .contextMenu {
-                                    Button("メモを削除", role: .destructive) {
-                                        delete(item)
+                            ForEach(themeItems) { item in
+                                MemoryItemView(item: item)
+                                    .position(
+                                        x: imageFrame.minX + item.x * imageFrame.width,
+                                        y: imageFrame.minY + item.y * imageFrame.height
+                                    )
+                                    .scaleEffect(item.scale)
+                                    .rotationEffect(.degrees(item.rotation))
+                                    .gesture(dragGesture(for: item, in: imageFrame))
+                                    .onTapGesture {
+                                        editingItem = item
                                     }
+                                    .contextMenu {
+                                        Button("メモを削除", role: .destructive) {
+                                            delete(item)
+                                        }
+                                    }
+                            }
+                        }
+                        .scaleEffect(zoomScale)
+                        .offset(panOffset)
+                        .gesture(
+                            panGesture
+                                .simultaneously(with: magnification)
+                        )
+                        .onTapGesture(count: 2) {
+                            withAnimation(.spring()) {
+                                if zoomScale > 1.0 {
+                                    zoomScale = 1.0
+                                    lastZoomScale = 1.0
+                                    panOffset = .zero
+                                    lastPanOffset = .zero
+                                } else {
+                                    zoomScale = 2.0
+                                    lastZoomScale = 2.0
                                 }
+                            }
                         }
                     }
                 }
@@ -157,6 +210,7 @@ struct PhotoEditorView: View {
         )
         modelContext.insert(item)
         try? modelContext.save()
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         editingItem = item
     }
 
@@ -180,6 +234,7 @@ struct PhotoEditorView: View {
             )
             modelContext.insert(item)
             try? modelContext.save()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             editingItem = item
         } catch {
             assertionFailure("Failed to add image note: \(error)")
@@ -209,12 +264,13 @@ struct PhotoEditorView: View {
                     dragStart = CGPoint(x: item.x, y: item.y)
                 }
 
-                item.x = clamped(dragStart.x + value.translation.width / imageFrame.width)
-                item.y = clamped(dragStart.y + value.translation.height / imageFrame.height)
+                item.x = clamped(dragStart.x + (value.translation.width / zoomScale) / imageFrame.width)
+                item.y = clamped(dragStart.y + (value.translation.height / zoomScale) / imageFrame.height)
                 item.updatedAt = Date()
             }
             .onEnded { _ in
                 draggingItemId = nil
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 try? modelContext.save()
             }
     }

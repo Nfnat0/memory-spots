@@ -101,23 +101,34 @@ struct ReviewView: View {
         modelContext.insert(ReviewResult(itemId: item.id, result: grade))
         try? modelContext.save()
 
-        if currentIndex + 1 < reviewItems.count {
-            currentIndex += 1
-            isAnswerVisible = false
-        } else {
-            currentIndex = reviewItems.count
-            isAnswerVisible = false
+        switch grade {
+        case .remembered:
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        case .unsure:
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        case .forgot:
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        }
+
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+            if currentIndex + 1 < reviewItems.count {
+                currentIndex += 1
+                isAnswerVisible = false
+            } else {
+                currentIndex = reviewItems.count
+                isAnswerVisible = false
+            }
         }
     }
 
     private func tint(for grade: ReviewGrade) -> Color {
         switch grade {
         case .remembered:
-            .green
+            PalaceStyle.sage
         case .unsure:
-            .orange
+            PalaceStyle.amber
         case .forgot:
-            .red
+            PalaceStyle.coral
         }
     }
 }

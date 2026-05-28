@@ -10,18 +10,20 @@
 		17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */ = {isa = PBXBuildFile; fileRef = 5050C9EA85B8B1736C509818 /* memory_notebook_card.png */; };
 		288CFD86CEB9A13BB7C4C260 /* MindPalaceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */; };
 		51919BCD7420B75C29DAA614 /* ImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20328AB420EA87A3F11288DB /* ImageStore.swift */; };
+		57762A58006F27E5032B505A /* TutorialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */; };
 		60C92DB7573BAEA99E572591 /* PhotoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */; };
+		6C4D9F04FB2DE3D4A04E1A9F /* my_room.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = E997D85EC3632E4DD2933F18 /* my_room.jpeg */; };
 		702CB63078808D6952643467 /* MemoryMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD703F90EBF77D285585A7CC /* MemoryMapView.swift */; };
+		70844F54EC96CCE0CFD49F65 /* local_park.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 10BC53B282C07FB5E84AD94C /* local_park.jpeg */; };
 		7DADF39D6F9670082E806ADB /* PalaceStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1A444DA9353A43AF90742B /* PalaceStyle.swift */; };
 		86B9436F98B999157009AA01 /* MemorySetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB0E77FBB25905F1EBD5063 /* MemorySetDetailView.swift */; };
 		938A8BE29D13712FDB13A04F /* SeedDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */; };
-		94213E47239D7482437DE8C7 /* gotanda_station.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 3F4F7F595E297A7E6C0474F5 /* gotanda_station.jpeg */; };
-		9C65FC51D9929E475D7382C3 /* gotanda_sidewalk.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 36E079C743506ACF0A27F24B /* gotanda_sidewalk.jpeg */; };
 		AA1E5600EB64D8F9220C31EE /* memory_notebook_hero.png in Resources */ = {isa = PBXBuildFile; fileRef = 9691A3BC2B4115F57DBE7117 /* memory_notebook_hero.png */; };
 		AB9B7102E5B82B20C7FCBCAF /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D6FBB682B61C4983AF33C3 /* CameraPicker.swift */; };
+		B1F7A9D9FD6F35A3D120CA4F /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = BA729BF3D594D7189D844D64 /* Localizable.xcstrings */; };
 		B7FC5EA4EA4B2466D0BC21DA /* MemoryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350DC7BF6AA07E61E0954225 /* MemoryModels.swift */; };
 		B981F4FC01BC16FC2C852893 /* LocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3087B2519E3359C15F8D94D7 /* LocationProvider.swift */; };
-		D47B28423FAB9A09EDD30DF9 /* gotanda_road.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 57D1E38EDC98385C159DA1C2 /* gotanda_road.jpeg */; };
+		CBBA86E36F8B97DE5F6C4282 /* desk_setup.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 24C09D4E011CBDEE455BF79F /* desk_setup.jpeg */; };
 		D9089C8E9F258B4E547ECF4F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7254FA0787EA207C87E000 /* HomeView.swift */; };
 		F4D534CA8584BD76E5D92EB6 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */; };
 		FB26FA7520718936AD0937AF /* LocationEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */; };
@@ -29,25 +31,27 @@
 
 /* Begin PBXFileReference section */
 		03D6FBB682B61C4983AF33C3 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
+		10BC53B282C07FB5E84AD94C /* local_park.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = local_park.jpeg; sourceTree = "<group>"; };
 		1C7254FA0787EA207C87E000 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20328AB420EA87A3F11288DB /* ImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStore.swift; sourceTree = "<group>"; };
 		24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataService.swift; sourceTree = "<group>"; };
+		24C09D4E011CBDEE455BF79F /* desk_setup.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = desk_setup.jpeg; sourceTree = "<group>"; };
 		29A661D21CEBD2F9D27F8127 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3087B2519E3359C15F8D94D7 /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
 		350DC7BF6AA07E61E0954225 /* MemoryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryModels.swift; sourceTree = "<group>"; };
-		36E079C743506ACF0A27F24B /* gotanda_sidewalk.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = gotanda_sidewalk.jpeg; sourceTree = "<group>"; };
-		3F4F7F595E297A7E6C0474F5 /* gotanda_station.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = gotanda_station.jpeg; sourceTree = "<group>"; };
 		4EB0E77FBB25905F1EBD5063 /* MemorySetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemorySetDetailView.swift; sourceTree = "<group>"; };
 		5050C9EA85B8B1736C509818 /* memory_notebook_card.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = memory_notebook_card.png; sourceTree = "<group>"; };
-		57D1E38EDC98385C159DA1C2 /* gotanda_road.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = gotanda_road.jpeg; sourceTree = "<group>"; };
 		702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MindPalaceApp.swift; sourceTree = "<group>"; };
 		87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoEditorView.swift; sourceTree = "<group>"; };
 		9691A3BC2B4115F57DBE7117 /* memory_notebook_hero.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = memory_notebook_hero.png; sourceTree = "<group>"; };
+		AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialView.swift; sourceTree = "<group>"; };
 		ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEditorView.swift; sourceTree = "<group>"; };
+		BA729BF3D594D7189D844D64 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		BD703F90EBF77D285585A7CC /* MemoryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapView.swift; sourceTree = "<group>"; };
 		C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		DB1A444DA9353A43AF90742B /* PalaceStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PalaceStyle.swift; sourceTree = "<group>"; };
+		E997D85EC3632E4DD2933F18 /* my_room.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = my_room.jpeg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -62,9 +66,9 @@
 		485B4973B1F335AFA232B488 /* SeedImages */ = {
 			isa = PBXGroup;
 			children = (
-				57D1E38EDC98385C159DA1C2 /* gotanda_road.jpeg */,
-				36E079C743506ACF0A27F24B /* gotanda_sidewalk.jpeg */,
-				3F4F7F595E297A7E6C0474F5 /* gotanda_station.jpeg */,
+				24C09D4E011CBDEE455BF79F /* desk_setup.jpeg */,
+				10BC53B282C07FB5E84AD94C /* local_park.jpeg */,
+				E997D85EC3632E4DD2933F18 /* my_room.jpeg */,
 			);
 			path = SeedImages;
 			sourceTree = "<group>";
@@ -107,6 +111,7 @@
 				DB1A444DA9353A43AF90742B /* PalaceStyle.swift */,
 				87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */,
 				C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */,
+				AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -115,6 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				29A661D21CEBD2F9D27F8127 /* Info.plist */,
+				BA729BF3D594D7189D844D64 /* Localizable.xcstrings */,
 				702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */,
 				7FFEE59657C15ADE51D70B51 /* Models */,
 				90148F28695368403574DB84 /* Resources */,
@@ -170,8 +176,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = F7C9A695EC87DF55115684AC /* Build configuration list for PBXProject "MindPalace" */;
 			developmentRegion = en;
@@ -179,6 +183,7 @@
 			knownRegions = (
 				Base,
 				en,
+				ja,
 			);
 			mainGroup = 0DC18CA806C17B9F8DB7C121;
 			minimizedProjectReferenceProxies = 1;
@@ -197,11 +202,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D47B28423FAB9A09EDD30DF9 /* gotanda_road.jpeg in Resources */,
-				9C65FC51D9929E475D7382C3 /* gotanda_sidewalk.jpeg in Resources */,
-				94213E47239D7482437DE8C7 /* gotanda_station.jpeg in Resources */,
+				B1F7A9D9FD6F35A3D120CA4F /* Localizable.xcstrings in Resources */,
+				CBBA86E36F8B97DE5F6C4282 /* desk_setup.jpeg in Resources */,
+				70844F54EC96CCE0CFD49F65 /* local_park.jpeg in Resources */,
 				17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */,
 				AA1E5600EB64D8F9220C31EE /* memory_notebook_hero.png in Resources */,
+				6C4D9F04FB2DE3D4A04E1A9F /* my_room.jpeg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,6 +231,7 @@
 				60C92DB7573BAEA99E572591 /* PhotoEditorView.swift in Sources */,
 				F4D534CA8584BD76E5D92EB6 /* ReviewView.swift in Sources */,
 				938A8BE29D13712FDB13A04F /* SeedDataService.swift in Sources */,
+				57762A58006F27E5032B505A /* TutorialView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,6 +308,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3Z2GBKFGF5;
 				INFOPLIST_FILE = MindPalace/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -376,6 +384,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 3Z2GBKFGF5;
 				INFOPLIST_FILE = MindPalace/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

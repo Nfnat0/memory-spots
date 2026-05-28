@@ -12,6 +12,7 @@ struct MemoryMapView: View {
     @State private var selectedSetId: UUID?
     @State private var selectedPhotoId: UUID?
     @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var animatedSelectedPhoto: MemoryPhoto? = nil
 
     private var visiblePhotos: [MemoryPhoto] {
         photos
@@ -76,20 +77,35 @@ struct MemoryMapView: View {
             .padding(.top, 8)
         }
         .safeAreaInset(edge: .bottom) {
-            if let selectedPhoto {
+            if let animatedSelectedPhoto {
                 MapPreviewCard(
-                    photo: selectedPhoto,
-                    memorySet: memorySets.first { $0.id == selectedPhoto.setId },
-                    theme: themes.first { $0.setId == selectedPhoto.setId },
-                    noteCount: items.filter { $0.photoId == selectedPhoto.id }.count
+                    photo: animatedSelectedPhoto,
+                    memorySet: memorySets.first { $0.id == animatedSelectedPhoto.setId },
+                    theme: themes.first { $0.setId == animatedSelectedPhoto.setId },
+                    noteCount: items.filter { $0.photoId == animatedSelectedPhoto.id }.count
                 )
+                .transition(.asymmetric(
+                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                    removal: .opacity
+                ))
                 .padding()
             }
         }
         .onAppear(perform: updateCameraIfNeeded)
         .onChange(of: selectedSetId) {
             selectedPhotoId = nil
+            withAnimation {
+                animatedSelectedPhoto = nil
+            }
             updateCameraIfNeeded()
+        }
+        .onChange(of: selectedPhotoId) { _, newValue in
+            if newValue != nil {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                animatedSelectedPhoto = visiblePhotos.first { $0.id == newValue }
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
     }
