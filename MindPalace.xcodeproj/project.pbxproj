@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */ = {isa = PBXBuildFile; fileRef = 5050C9EA85B8B1736C509818 /* memory_notebook_card.png */; };
 		288CFD86CEB9A13BB7C4C260 /* MindPalaceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */; };
+		36A8F0655566734E6A38663D /* GeometryUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EBACBC955120915D421E52 /* GeometryUtilsTests.swift */; };
 		51919BCD7420B75C29DAA614 /* ImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20328AB420EA87A3F11288DB /* ImageStore.swift */; };
 		57762A58006F27E5032B505A /* TutorialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */; };
 		60C92DB7573BAEA99E572591 /* PhotoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */; };
@@ -35,17 +36,28 @@
 		FB99A743C8F5306C2959BA0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4134EA970D56F0A9B12A3611 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		929E62CFBD47FCE95F773D55 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3D53D31276917A441A86FF9E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1B831FAF631E4F0266EF59B7;
+			remoteInfo = MindPalace;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		03D6FBB682B61C4983AF33C3 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		10BC53B282C07FB5E84AD94C /* local_park.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = local_park.jpeg; sourceTree = "<group>"; };
 		14F7D7FB9D12E1C165784453 /* GeometryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtils.swift; sourceTree = "<group>"; };
 		1C7254FA0787EA207C87E000 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20328AB420EA87A3F11288DB /* ImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStore.swift; sourceTree = "<group>"; };
 		24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataService.swift; sourceTree = "<group>"; };
 		24C09D4E011CBDEE455BF79F /* desk_setup.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = desk_setup.jpeg; sourceTree = "<group>"; };
 		29A661D21CEBD2F9D27F8127 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		3087B2519E3359C15F8D94D7 /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
+		33EBACBC955120915D421E52 /* GeometryUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtilsTests.swift; sourceTree = "<group>"; };
 		350DC7BF6AA07E61E0954225 /* MemoryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryModels.swift; sourceTree = "<group>"; };
 		3B3C584B18F912DC971A8EFC /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		4134EA970D56F0A9B12A3611 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -64,6 +76,7 @@
 		DB1A444DA9353A43AF90742B /* PalaceStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PalaceStyle.swift; sourceTree = "<group>"; };
 		DD97BAA1E2A94F6DB3859F3B /* MemoryItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryItemView.swift; sourceTree = "<group>"; };
 		E997D85EC3632E4DD2933F18 /* my_room.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = my_room.jpeg; sourceTree = "<group>"; };
+		FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MindPalaceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -71,8 +84,17 @@
 			isa = PBXGroup;
 			children = (
 				C422B1A13F5C1EBF9498120B /* MindPalace */,
+				235D29297CD18E820C415CD7 /* MindPalaceTests */,
 				D4D576095A3470779987EB97 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		235D29297CD18E820C415CD7 /* MindPalaceTests */ = {
+			isa = PBXGroup;
+			children = (
+				33EBACBC955120915D421E52 /* GeometryUtilsTests.swift */,
+			);
+			path = MindPalaceTests;
 			sourceTree = "<group>";
 		};
 		485B4973B1F335AFA232B488 /* SeedImages */ = {
@@ -152,6 +174,7 @@
 			isa = PBXGroup;
 			children = (
 				1F520C499840A3BC6065F1C5 /* MindPalace.app */,
+				FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -186,6 +209,24 @@
 			productReference = 1F520C499840A3BC6065F1C5 /* MindPalace.app */;
 			productType = "com.apple.product-type.application";
 		};
+		2696D9F5F4593DF14E779D87 /* MindPalaceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F37D63AF18151714F2C05134 /* Build configuration list for PBXNativeTarget "MindPalaceTests" */;
+			buildPhases = (
+				5D03086EA845AA15651CC7F6 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F5F6B5B07637BF1BC162D705 /* PBXTargetDependency */,
+			);
+			name = MindPalaceTests;
+			packageProductDependencies = (
+			);
+			productName = MindPalaceTests;
+			productReference = FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -194,6 +235,14 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					1B831FAF631E4F0266EF59B7 = {
+						DevelopmentTeam = 3Z2GBKFGF5;
+					};
+					2696D9F5F4593DF14E779D87 = {
+						DevelopmentTeam = 3Z2GBKFGF5;
+					};
+				};
 			};
 			buildConfigurationList = F7C9A695EC87DF55115684AC /* Build configuration list for PBXProject "MindPalace" */;
 			developmentRegion = en;
@@ -211,6 +260,7 @@
 			projectRoot = "";
 			targets = (
 				1B831FAF631E4F0266EF59B7 /* MindPalace */,
+				2696D9F5F4593DF14E779D87 /* MindPalaceTests */,
 			);
 		};
 /* End PBXProject section */
@@ -259,7 +309,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5D03086EA845AA15651CC7F6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				36A8F0655566734E6A38663D /* GeometryUtilsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F5F6B5B07637BF1BC162D705 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1B831FAF631E4F0266EF59B7 /* MindPalace */;
+			targetProxy = 929E62CFBD47FCE95F773D55 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		023262F196AB822ED6D84A3F /* Debug */ = {
@@ -330,6 +396,42 @@
 				SWIFT_VERSION = 5.9;
 			};
 			name = Debug;
+		};
+		2342A24D5C3E031193FC105E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
+			};
+			name = Debug;
+		};
+		5772524CBA71850D55ADEC14 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
+			};
+			name = Release;
 		};
 		6D0C90E776BA4C96D9489CE4 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -435,6 +537,15 @@
 			buildConfigurations = (
 				8DA9BE44A5B741B12A05CD96 /* Debug */,
 				6D0C90E776BA4C96D9489CE4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F37D63AF18151714F2C05134 /* Build configuration list for PBXNativeTarget "MindPalaceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2342A24D5C3E031193FC105E /* Debug */,
+				5772524CBA71850D55ADEC14 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
