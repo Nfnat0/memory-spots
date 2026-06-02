@@ -48,6 +48,8 @@ struct PhotoEditorView: View {
             }
     }
 
+    @State private var uiImage: UIImage? = nil
+
     private var themeItems: [MemoryItem] {
         items
             .filter { $0.photoId == photo.id && $0.themeId == theme.id }
@@ -56,7 +58,7 @@ struct PhotoEditorView: View {
 
     var body: some View {
         Group {
-            if let image = ImageStore.loadImage(named: photo.imagePath) {
+            if let image = uiImage {
                 GeometryReader { proxy in
                     let imageFrame = aspectFitFrame(imageSize: image.size, containerSize: proxy.size)
 
@@ -113,60 +115,60 @@ struct PhotoEditorView: View {
                     }
                 }
             } else {
-                ContentUnavailableView(
-                    "写真を読み込めません",
-                    systemImage: "photo",
-                    description: Text("保存済みの画像ファイルが見つかりませんでした。")
-                )
+                ProgressView("読み込み中...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(NotebookBackground())
             }
+        }
+        .task {
+            uiImage = await ImageLoader.shared.load(fileName: photo.imagePath)
         }
         .navigationTitle(theme.name)
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
-            HStack {
-                Label("現在のテーマ: \(theme.name)", systemImage: "tag")
-                    .font(.subheadline)
-                    .foregroundStyle(PalaceStyle.ink)
-                    .lineLimit(1)
-
-                Spacer()
-
-                Menu {
-                    Button {
-                        addNote(type: .stickyText)
-                    } label: {
-                        Label("付箋", systemImage: MemoryItemType.stickyText.systemImage)
-                    }
-
-                    Button {
-                        isImagePickerPresented = true
-                    } label: {
-                        Label("画像", systemImage: MemoryItemType.image.systemImage)
-                    }
-
-                    Button {
-                        addNote(type: .icon)
-                    } label: {
-                        Label("アイコン", systemImage: MemoryItemType.icon.systemImage)
-                    }
-
-                    Button {
-                        addNote(type: .numberLabel)
-                    } label: {
-                        Label("番号", systemImage: MemoryItemType.numberLabel.systemImage)
-                    }
-
-                    Button {
-                        addNote(type: .arrow)
-                    } label: {
-                        Label("矢印", systemImage: MemoryItemType.arrow.systemImage)
-                    }
-                } label: {
-                    Label("置く", systemImage: "plus.circle.fill")
+            VStack(spacing: 8) {
+                HStack {
+                    Label("現在のテーマ: \(theme.name)", systemImage: "tag")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(PalaceStyle.mutedInk)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(.white.opacity(0.5), in: Capsule())
+                    Spacer()
                 }
-                .buttonStyle(.borderedProminent)
+                .padding(.horizontal)
+                .padding(.top, 4)
+
+                HStack(spacing: 12) {
+                    ForEach(MemoryItemType.allCases) { type in
+                        Button {
+                            if type == .image {
+                                isImagePickerPresented = true
+                            } else {
+                                addNote(type: type)
+                            }
+                        } label: {
+                            VStack(spacing: 4) {
+                                Image(systemName: type.systemImage)
+                                    .font(.system(size: 20, weight: .bold))
+                                Text(type.title)
+                                    .font(.system(size: 9, weight: .medium))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(PalaceStyle.paperDeep.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
+                            .foregroundStyle(PalaceStyle.ink)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(PalaceStyle.paperDeep.opacity(0.8), lineWidth: 1)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
             }
-            .padding()
             .background(.ultraThinMaterial)
             .overlay(alignment: .top) {
                 Rectangle()
@@ -184,12 +186,14 @@ struct PhotoEditorView: View {
                 self.selectedImageItem = nil
             }
         }
-        .sheet(item: $editingItem) { item in
-            NoteEditorView(item: item) {
-                delete(item)
-                editingItem = nil
+        .sheet(isPresented: Binding(get: { editingItem != nil }, set: { if !$0 { editingItem = nil } })) {
+            if let item = editingItem {
+                NoteEditorView(item: item) {
+                    delete(item)
+                    editingItem = nil
+                }
+                .presentationDetents([.medium])
             }
-            .presentationDetents([.medium])
         }
     }
 
@@ -208,6 +212,8 @@ struct PhotoEditorView: View {
             y: 0.5,
             orderIndex: themeItems.count
         )
+        item.photo = photo
+        item.theme = theme
         modelContext.insert(item)
         try? modelContext.save()
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -232,6 +238,8 @@ struct PhotoEditorView: View {
                 y: 0.5,
                 orderIndex: themeItems.count
             )
+            item.photo = photo
+            item.theme = theme
             modelContext.insert(item)
             try? modelContext.save()
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -291,76 +299,6 @@ struct PhotoEditorView: View {
             "\(themeItems.filter { $0.itemType == .numberLabel }.count + 1)"
         case .arrow:
             "矢印"
-        }
-    }
-}
-
-private struct MemoryItemView: View {
-    let item: MemoryItem
-
-    var body: some View {
-        Group {
-            switch item.itemType {
-            case .stickyText:
-                Text(item.frontText.isEmpty ? "メモ" : item.frontText)
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(PalaceStyle.ink)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .frame(minWidth: 88, maxWidth: 150)
-                    .background(stickyColor, in: RoundedRectangle(cornerRadius: 8))
-            case .image:
-                if let imagePath = item.imagePath, let image = ImageStore.loadImage(named: imagePath) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 110, height: 86)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                } else {
-                    Label("画像", systemImage: "photo")
-                        .padding(12)
-                        .background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 8))
-                }
-            case .icon:
-                VStack(spacing: 4) {
-                    Image(systemName: item.iconName ?? "star.fill")
-                        .font(.system(size: 34, weight: .bold))
-                    if !item.frontText.isEmpty {
-                        Text(item.frontText)
-                            .font(.caption.weight(.semibold))
-                    }
-                }
-                .foregroundStyle(.white)
-                .padding(12)
-                .background(PalaceStyle.sage.gradient, in: Circle())
-            case .numberLabel:
-                Text(item.frontText.isEmpty ? "1" : item.frontText)
-                    .font(.title2.weight(.black))
-                    .foregroundStyle(.white)
-                    .frame(width: 48, height: 48)
-                    .background(PalaceStyle.amber.gradient, in: Circle())
-            case .arrow:
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 48, weight: .black))
-                    .foregroundStyle(PalaceStyle.coral)
-            }
-        }
-        .shadow(color: .black.opacity(0.18), radius: 5, y: 2)
-        .accessibilityLabel(item.itemType.title)
-    }
-
-    private var stickyColor: Color {
-        switch item.colorName {
-        case "pink":
-            PalaceStyle.coral.opacity(0.62)
-        case "blue":
-            Color(red: 0.55, green: 0.75, blue: 0.78).opacity(0.82)
-        case "green":
-            PalaceStyle.sage.opacity(0.72)
-        default:
-            Color(red: 0.98, green: 0.82, blue: 0.36)
         }
     }
 }
@@ -441,26 +379,4 @@ private struct NoteEditorView: View {
             set: { item.iconName = $0 }
         )
     }
-}
-
-private extension MemoryItem {
-    var itemType: MemoryItemType {
-        MemoryItemType(rawValue: type) ?? .stickyText
-    }
-}
-
-func aspectFitFrame(imageSize: CGSize, containerSize: CGSize) -> CGRect {
-    guard imageSize.width > 0, imageSize.height > 0, containerSize.width > 0, containerSize.height > 0 else {
-        return .zero
-    }
-
-    let scale = min(containerSize.width / imageSize.width, containerSize.height / imageSize.height)
-    let width = imageSize.width * scale
-    let height = imageSize.height * scale
-    return CGRect(
-        x: (containerSize.width - width) / 2,
-        y: (containerSize.height - height) / 2,
-        width: width,
-        height: height
-    )
 }

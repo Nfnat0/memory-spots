@@ -67,8 +67,8 @@ struct HomeView: View {
                         } label: {
                             MemorySetRow(
                                 memorySet: memorySet,
-                                photoCount: photos.filter { $0.setId == memorySet.id }.count,
-                                themeCount: themes.filter { $0.setId == memorySet.id }.count
+                                photoCount: memorySet.photos.count,
+                                themeCount: memorySet.themes.count
                             )
                         }
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
@@ -121,31 +121,15 @@ struct HomeView: View {
     private func createSet(named name: String) {
         let memorySet = MemorySet(name: name)
         let theme = MemoryTheme(setId: memorySet.id, name: "デフォルト")
+        theme.set = memorySet
         modelContext.insert(memorySet)
         modelContext.insert(theme)
         try? modelContext.save()
     }
 
     private func delete(_ memorySet: MemorySet) {
-        let setPhotos = photos.filter { $0.setId == memorySet.id }
-        let setThemes = themes.filter { $0.setId == memorySet.id }
-        let photoIds = Set(setPhotos.map(\.id))
-        let themeIds = Set(setThemes.map(\.id))
-        let setItems = items.filter { photoIds.contains($0.photoId) || themeIds.contains($0.themeId) }
-        let itemIds = Set(setItems.map(\.id))
-
-        for result in reviewResults where itemIds.contains(result.itemId) {
-            modelContext.delete(result)
-        }
-        for item in setItems {
-            modelContext.delete(item)
-        }
-        for photo in setPhotos {
+        for photo in memorySet.photos {
             ImageStore.deleteImage(named: photo.imagePath)
-            modelContext.delete(photo)
-        }
-        for theme in setThemes {
-            modelContext.delete(theme)
         }
         modelContext.delete(memorySet)
         try? modelContext.save()

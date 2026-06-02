@@ -206,7 +206,7 @@ struct MemorySetDetailView: View {
     }
 
     private func noteCount(for photo: MemoryPhoto, theme: MemoryTheme) -> Int {
-        items.filter { $0.photoId == photo.id && $0.themeId == theme.id }.count
+        photo.items.filter { $0.theme == theme }.count
     }
 
     private func createDefaultTheme() {
@@ -215,6 +215,7 @@ struct MemorySetDetailView: View {
 
     private func createTheme(named name: String) {
         let theme = MemoryTheme(setId: memorySet.id, name: name)
+        theme.set = memorySet
         modelContext.insert(theme)
         selectedThemeId = theme.id
         memorySet.updatedAt = Date()
@@ -225,14 +226,6 @@ struct MemorySetDetailView: View {
         guard let selectedTheme else {
             return
         }
-        let themeItems = items.filter { $0.themeId == selectedTheme.id }
-        let itemIds = Set(themeItems.map(\.id))
-        for result in reviewResults where itemIds.contains(result.itemId) {
-            modelContext.delete(result)
-        }
-        for item in themeItems {
-            modelContext.delete(item)
-        }
         modelContext.delete(selectedTheme)
         selectedThemeId = setThemes.first { $0.id != selectedTheme.id }?.id
         memorySet.updatedAt = Date()
@@ -242,14 +235,6 @@ struct MemorySetDetailView: View {
     private func deletePhotos(at offsets: IndexSet) {
         for index in offsets {
             let photo = setPhotos[index]
-            let photoItems = items.filter { $0.photoId == photo.id }
-            let itemIds = Set(photoItems.map(\.id))
-            for result in reviewResults where itemIds.contains(result.itemId) {
-                modelContext.delete(result)
-            }
-            for item in photoItems {
-                modelContext.delete(item)
-            }
             ImageStore.deleteImage(named: photo.imagePath)
             modelContext.delete(photo)
         }
@@ -275,10 +260,7 @@ struct MemorySetDetailView: View {
     }
 
     private func reviewItems(for theme: MemoryTheme) -> [MemoryItem] {
-        let photoIds = Set(setPhotos.map(\.id))
-        return items.filter { item in
-            item.themeId == theme.id && photoIds.contains(item.photoId)
-        }
+        setPhotos.flatMap { $0.items.filter { $0.theme == theme } }
     }
 }
 
@@ -382,13 +364,7 @@ private struct PhotoRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let image = ImageStore.loadImage(named: photo.imagePath) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 64, height: 64)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            } else {
+            MemoryPhotoView(imagePath: photo.imagePath) {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(.secondary.opacity(0.2))
                     .frame(width: 64, height: 64)
@@ -397,6 +373,9 @@ private struct PhotoRow: View {
                             .foregroundStyle(.secondary)
                     }
             }
+            .scaledToFill()
+            .frame(width: 64, height: 64)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(photo.title)
@@ -517,6 +496,7 @@ private struct AddPhotoSheet: View {
                 longitude: coordinate?.longitude,
                 orderIndex: nextOrderIndex
             )
+            photo.set = memorySet
             modelContext.insert(photo)
             memorySet.updatedAt = Date()
             try modelContext.save()

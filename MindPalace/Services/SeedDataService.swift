@@ -4,9 +4,8 @@ import SwiftData
 enum SeedDataService {
     @MainActor
     static func seedAWSExamSetIfNeeded(modelContext: ModelContext) {
-        let localizedSetName = String(localized: "My Room & Park")
         var descriptor = FetchDescriptor<MemorySet>(
-            predicate: #Predicate { $0.name == localizedSetName }
+            predicate: #Predicate { $0.stableId == "default-seed-set" }
         )
         descriptor.fetchLimit = 1
 
@@ -26,13 +25,15 @@ enum SeedDataService {
     private static func seedDefaultSet(modelContext: ModelContext) throws {
         let memorySet = MemorySet(
             name: String(localized: "My Room & Park"),
-            detail: String(localized: "A sample memory set using familiar everyday spaces (My Room, Desk Setup, Local Park).")
+            detail: String(localized: "A sample memory set using familiar everyday spaces (My Room, Desk Setup, Local Park)."),
+            stableId: "default-seed-set"
         )
         let theme = MemoryTheme(
             setId: memorySet.id,
             name: String(localized: "Grocery List"),
             colorName: "yellow"
         )
+        theme.set = memorySet
 
         modelContext.insert(memorySet)
         modelContext.insert(theme)
@@ -50,20 +51,22 @@ enum SeedDataService {
                 longitude: photoSeed.longitude,
                 orderIndex: photoIndex
             )
+            photo.set = memorySet
             modelContext.insert(photo)
 
             for (itemIndex, itemSeed) in photoSeed.items.enumerated() {
-                modelContext.insert(
-                    MemoryItem(
-                        photoId: photo.id,
-                        themeId: theme.id,
-                        frontText: String(localized: itemSeed.frontKey),
-                        backText: String(localized: itemSeed.backKey),
-                        x: itemSeed.x,
-                        y: itemSeed.y,
-                        orderIndex: itemIndex
-                    )
+                let item = MemoryItem(
+                    photoId: photo.id,
+                    themeId: theme.id,
+                    frontText: String(localized: itemSeed.frontKey),
+                    backText: String(localized: itemSeed.backKey),
+                    x: itemSeed.x,
+                    y: itemSeed.y,
+                    orderIndex: itemIndex
                 )
+                item.photo = photo
+                item.theme = theme
+                modelContext.insert(item)
             }
         }
 
@@ -72,14 +75,7 @@ enum SeedDataService {
 
     @MainActor
     private static func updateSeedPhotoLocationsIfNeeded(memorySet: MemorySet, modelContext: ModelContext) {
-        let setId = memorySet.id
-        let descriptor = FetchDescriptor<MemoryPhoto>(
-            predicate: #Predicate { $0.setId == setId }
-        )
-        guard let photos = try? modelContext.fetch(descriptor) else {
-            return
-        }
-
+        let photos = memorySet.photos
         var didUpdate = false
         for photoSeed in photoSeeds {
             let title = String(localized: photoSeed.titleKey)

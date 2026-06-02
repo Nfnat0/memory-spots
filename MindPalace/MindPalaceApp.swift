@@ -7,6 +7,7 @@ struct MindPalaceApp: App {
         WindowGroup {
             HomeView()
                 .tint(PalaceStyle.coral)
+                .preferredColorScheme(.light)
         }
         .modelContainer(for: [
             MemorySet.self,

@@ -1,13 +1,35 @@
 import Foundation
 import UIKit
+import ImageIO
 
 enum ImageStore {
     private static let folderName = "PlacePhotos"
 
+    private static func downsample(imageData: Data, maxPixelSize: CGFloat = 2048) -> Data {
+        let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let imageSource = CGImageSourceCreateWithData(imageData as CFData, imageSourceOptions) else {
+            return imageData
+        }
+        let downsampleOptions = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize
+        ] as [CFString : Any] as CFDictionary
+        
+        guard let downsampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downsampleOptions) else {
+            return imageData
+        }
+        
+        let uiImage = UIImage(cgImage: downsampledImage)
+        return uiImage.jpegData(compressionQuality: 0.88) ?? imageData
+    }
+
     static func saveImageData(_ data: Data) throws -> String {
+        let downsampled = downsample(imageData: data)
         let fileName = "\(UUID().uuidString).jpg"
         let url = try imagesDirectory().appending(path: fileName)
-        try data.write(to: url, options: [.atomic])
+        try downsampled.write(to: url, options: [.atomic])
         return fileName
     }
 
@@ -46,10 +68,13 @@ enum ImageStore {
             appropriateFor: nil,
             create: true
         )
-        let directory = baseURL.appending(path: folderName, directoryHint: .isDirectory)
+        var directory = baseURL.appending(path: folderName, directoryHint: .isDirectory)
         if !FileManager.default.fileExists(atPath: directory.path(percentEncoded: false)) {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         }
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try directory.setResourceValues(values)
         return directory
     }
 }

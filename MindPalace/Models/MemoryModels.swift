@@ -8,11 +8,19 @@ final class MemorySet: Identifiable {
     var detail: String
     var createdAt: Date
     var updatedAt: Date
+    var stableId: String?
 
-    init(name: String, detail: String = "") {
+    @Relationship(deleteRule: .cascade, inverse: \MemoryPhoto.set)
+    var photos: [MemoryPhoto] = []
+
+    @Relationship(deleteRule: .cascade, inverse: \MemoryTheme.set)
+    var themes: [MemoryTheme] = []
+
+    init(name: String, detail: String = "", stableId: String? = nil) {
         self.id = UUID()
         self.name = name
         self.detail = detail
+        self.stableId = stableId
         self.createdAt = Date()
         self.updatedAt = Date()
     }
@@ -28,6 +36,11 @@ final class MemoryPhoto: Identifiable {
     var longitude: Double?
     var orderIndex: Int
     var createdAt: Date
+
+    var set: MemorySet?
+
+    @Relationship(deleteRule: .cascade, inverse: \MemoryItem.photo)
+    var items: [MemoryItem] = []
 
     init(
         setId: UUID,
@@ -56,6 +69,11 @@ final class MemoryTheme: Identifiable {
     var colorName: String
     var createdAt: Date
 
+    var set: MemorySet?
+
+    @Relationship(deleteRule: .cascade, inverse: \MemoryItem.theme)
+    var items: [MemoryItem] = []
+
     init(setId: UUID, name: String, colorName: String = "yellow") {
         self.id = UUID()
         self.setId = setId
@@ -83,6 +101,12 @@ final class MemoryItem: Identifiable {
     var orderIndex: Int
     var createdAt: Date
     var updatedAt: Date
+
+    var photo: MemoryPhoto?
+    var theme: MemoryTheme?
+
+    @Relationship(deleteRule: .cascade, inverse: \ReviewResult.item)
+    var reviewResults: [ReviewResult] = []
 
     init(
         photoId: UUID,
@@ -164,6 +188,8 @@ final class ReviewResult: Identifiable {
     var itemId: UUID
     var result: String
     var reviewedAt: Date
+
+    var item: MemoryItem?
 
     init(itemId: UUID, result: ReviewGrade) {
         self.id = UUID()

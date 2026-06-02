@@ -15,13 +15,16 @@ struct MemoryMapView: View {
     @State private var animatedSelectedPhoto: MemoryPhoto? = nil
 
     private var visiblePhotos: [MemoryPhoto] {
-        photos
-            .filter { photo in
-                photo.latitude != nil
-                    && photo.longitude != nil
-                    && (selectedSetId == nil || photo.setId == selectedSetId)
-            }
-            .sorted { $0.createdAt < $1.createdAt }
+        if let selectedSetId {
+            guard let selectedSet = memorySets.first(where: { $0.id == selectedSetId }) else { return [] }
+            return selectedSet.photos
+                .filter { $0.latitude != nil && $0.longitude != nil }
+                .sorted { $0.createdAt < $1.createdAt }
+        } else {
+            return photos
+                .filter { $0.latitude != nil && $0.longitude != nil }
+                .sorted { $0.createdAt < $1.createdAt }
+        }
     }
 
     private var selectedPhoto: MemoryPhoto? {
@@ -37,7 +40,7 @@ struct MemoryMapView: View {
                     ForEach(visiblePhotos) { photo in
                         Annotation(photo.title, coordinate: coordinate(for: photo)) {
                             PhotoMapPin(
-                                image: ImageStore.loadImage(named: photo.imagePath),
+                                imagePath: photo.imagePath,
                                 isSelected: selectedPhotoId == photo.id
                             )
                         }
@@ -80,9 +83,9 @@ struct MemoryMapView: View {
             if let animatedSelectedPhoto {
                 MapPreviewCard(
                     photo: animatedSelectedPhoto,
-                    memorySet: memorySets.first { $0.id == animatedSelectedPhoto.setId },
-                    theme: themes.first { $0.setId == animatedSelectedPhoto.setId },
-                    noteCount: items.filter { $0.photoId == animatedSelectedPhoto.id }.count
+                    memorySet: animatedSelectedPhoto.set,
+                    theme: animatedSelectedPhoto.set?.themes.sorted(by: { $0.createdAt < $1.createdAt }).first,
+                    noteCount: animatedSelectedPhoto.items.count
                 )
                 .transition(.asymmetric(
                     insertion: .move(edge: .bottom).combined(with: .opacity),
@@ -208,7 +211,7 @@ private struct FilterChip: View {
 }
 
 private struct PhotoMapPin: View {
-    let image: UIImage?
+    let imagePath: String
     let isSelected: Bool
 
     var body: some View {
@@ -222,13 +225,7 @@ private struct PhotoMapPin: View {
                         .stroke(isSelected ? PalaceStyle.coral : PalaceStyle.paperDeep, lineWidth: isSelected ? 4 : 2)
                 }
 
-            if let image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 46, height: 46)
-                    .clipShape(Circle())
-            } else {
+            MemoryPhotoView(imagePath: imagePath) {
                 Circle()
                     .fill(PalaceStyle.paperDeep.opacity(0.32))
                     .frame(width: 46, height: 46)
@@ -237,6 +234,9 @@ private struct PhotoMapPin: View {
                             .foregroundStyle(PalaceStyle.mutedInk)
                     }
             }
+            .scaledToFill()
+            .frame(width: 46, height: 46)
+            .clipShape(Circle())
         }
         .scaleEffect(isSelected ? 1.18 : 1)
         .animation(.spring(response: 0.24, dampingFraction: 0.72), value: isSelected)
@@ -251,13 +251,14 @@ private struct MapPreviewCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            if let image = ImageStore.loadImage(named: photo.imagePath) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
+            MemoryPhotoView(imagePath: photo.imagePath) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(.secondary.opacity(0.2))
                     .frame(width: 72, height: 72)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
+            .scaledToFill()
+            .frame(width: 72, height: 72)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(photo.title)
