@@ -10,6 +10,7 @@
 		17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */ = {isa = PBXBuildFile; fileRef = 5050C9EA85B8B1736C509818 /* memory_notebook_card.png */; };
 		288CFD86CEB9A13BB7C4C260 /* MindPalaceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */; };
 		36A8F0655566734E6A38663D /* GeometryUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33EBACBC955120915D421E52 /* GeometryUtilsTests.swift */; };
+		464DECF472A597C430C645DA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFC3207809A4D16D2C368131 /* PrivacyInfo.xcprivacy */; };
 		51919BCD7420B75C29DAA614 /* ImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20328AB420EA87A3F11288DB /* ImageStore.swift */; };
 		57762A58006F27E5032B505A /* TutorialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */; };
 		60C92DB7573BAEA99E572591 /* PhotoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87432C1241B6FF9B946A08CE /* PhotoEditorView.swift */; };
@@ -68,6 +69,7 @@
 		9691A3BC2B4115F57DBE7117 /* memory_notebook_hero.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = memory_notebook_hero.png; sourceTree = "<group>"; };
 		AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialView.swift; sourceTree = "<group>"; };
 		ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEditorView.swift; sourceTree = "<group>"; };
+		AFC3207809A4D16D2C368131 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BA729BF3D594D7189D844D64 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		BD703F90EBF77D285585A7CC /* MemoryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapView.swift; sourceTree = "<group>"; };
 		C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
@@ -76,7 +78,7 @@
 		DB1A444DA9353A43AF90742B /* PalaceStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PalaceStyle.swift; sourceTree = "<group>"; };
 		DD97BAA1E2A94F6DB3859F3B /* MemoryItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryItemView.swift; sourceTree = "<group>"; };
 		E997D85EC3632E4DD2933F18 /* my_room.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = my_room.jpeg; sourceTree = "<group>"; };
-		FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MindPalaceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MindPalaceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -162,6 +164,7 @@
 				3B3C584B18F912DC971A8EFC /* InfoPlist.xcstrings */,
 				BA729BF3D594D7189D844D64 /* Localizable.xcstrings */,
 				702F0A7DC22F59252F27C58C /* MindPalaceApp.swift */,
+				AFC3207809A4D16D2C368131 /* PrivacyInfo.xcprivacy */,
 				7FFEE59657C15ADE51D70B51 /* Models */,
 				90148F28695368403574DB84 /* Resources */,
 				71938A53633A56C6E53DECBE /* Services */,
@@ -273,6 +276,7 @@
 				FB99A743C8F5306C2959BA0D /* Assets.xcassets in Resources */,
 				D9BF59CC9E847A45D6CB238E /* InfoPlist.xcstrings in Resources */,
 				B1F7A9D9FD6F35A3D120CA4F /* Localizable.xcstrings in Resources */,
+				464DECF472A597C430C645DA /* PrivacyInfo.xcprivacy in Resources */,
 				CBBA86E36F8B97DE5F6C4282 /* desk_setup.jpeg in Resources */,
 				70844F54EC96CCE0CFD49F65 /* local_park.jpeg in Resources */,
 				17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */,
@@ -408,7 +412,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalaceTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
@@ -426,7 +430,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalaceTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
