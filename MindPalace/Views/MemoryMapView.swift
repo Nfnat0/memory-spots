@@ -10,21 +10,40 @@ struct MemoryMapView: View {
     @Query private var items: [MemoryItem]
 
     @State private var selectedSetId: UUID?
+    @State private var selectedThemeId: UUID?
+    @State private var albumSearchText = ""
+    @State private var themeSearchText = ""
     @State private var selectedPhotoId: UUID?
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var animatedSelectedPhoto: MemoryPhoto? = nil
 
     private var visiblePhotos: [MemoryPhoto] {
-        if let selectedSetId {
-            guard let selectedSet = memorySets.first(where: { $0.id == selectedSetId }) else { return [] }
-            return selectedSet.photos
-                .filter { $0.latitude != nil && $0.longitude != nil }
-                .sorted { $0.createdAt < $1.createdAt }
+        var filteredPhotos: [MemoryPhoto]
+        if let selectedSet {
+            filteredPhotos = selectedSet.photos
         } else {
-            return photos
-                .filter { $0.latitude != nil && $0.longitude != nil }
-                .sorted { $0.createdAt < $1.createdAt }
+            filteredPhotos = photos
         }
+
+        if let selectedThemeId {
+            filteredPhotos = filteredPhotos.filter { photo in
+                photo.items.contains { $0.themeId == selectedThemeId }
+            }
+        }
+
+        return filteredPhotos
+            .filter { $0.latitude != nil && $0.longitude != nil }
+            .sorted { $0.createdAt < $1.createdAt }
+    }
+
+    private var selectedSet: MemorySet? {
+        guard let selectedSetId else { return nil }
+        return memorySets.first { $0.id == selectedSetId }
+    }
+
+    private var selectedTheme: MemoryTheme? {
+        guard let selectedThemeId else { return nil }
+        return themes.first { $0.id == selectedThemeId }
     }
 
     private var selectedPhoto: MemoryPhoto? {
@@ -72,9 +91,13 @@ struct MemoryMapView: View {
                         .stroke(.white.opacity(0.58), lineWidth: 1)
                 }
 
-                SetFilterChips(
+                SearchFilterPanel(
                     memorySets: memorySets,
-                    selectedSetId: $selectedSetId
+                    themes: themes,
+                    selectedSetId: $selectedSetId,
+                    selectedThemeId: $selectedThemeId,
+                    albumSearchText: $albumSearchText,
+                    themeSearchText: $themeSearchText
                 )
             }
             .padding(.top, 8)
@@ -84,7 +107,7 @@ struct MemoryMapView: View {
                 MapPreviewCard(
                     photo: animatedSelectedPhoto,
                     memorySet: animatedSelectedPhoto.set,
-                    noteCount: animatedSelectedPhoto.items.count
+                    noteCount: noteCount(for: animatedSelectedPhoto)
                 )
                 .transition(.asymmetric(
                     insertion: .move(edge: .bottom).combined(with: .opacity),
@@ -95,6 +118,9 @@ struct MemoryMapView: View {
         }
         .onAppear(perform: updateCameraIfNeeded)
         .onChange(of: selectedSetId) {
+            if let selectedTheme, selectedTheme.setId != selectedSetId {
+                selectedThemeId = nil
+            }
             selectedPhotoId = nil
             withAnimation {
                 animatedSelectedPhoto = nil
@@ -110,6 +136,13 @@ struct MemoryMapView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func noteCount(for photo: MemoryPhoto) -> Int {
+        if let selectedThemeId {
+            return photo.items.filter { $0.themeId == selectedThemeId }.count
+        }
+        return photo.items.count
     }
 
     private func updateCameraIfNeeded() {
@@ -158,52 +191,210 @@ private struct MapEmptyState: View {
     }
 }
 
-private struct SetFilterChips: View {
+private struct SearchFilterPanel: View {
     let memorySets: [MemorySet]
+    let themes: [MemoryTheme]
     @Binding var selectedSetId: UUID?
+    @Binding var selectedThemeId: UUID?
+    @Binding var albumSearchText: String
+    @Binding var themeSearchText: String
+
+    private var selectedSet: MemorySet? {
+        guard let selectedSetId else { return nil }
+        return memorySets.first { $0.id == selectedSetId }
+    }
+
+    private var selectedTheme: MemoryTheme? {
+        guard let selectedThemeId else { return nil }
+        return themes.first { $0.id == selectedThemeId }
+    }
+
+    private var albumMatches: [MemorySet] {
+        let query = albumSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return [] }
+        return Array(memorySets.filter { $0.name.localizedStandardContains(query) }.prefix(6))
+    }
+
+    private var themeMatches: [MemoryTheme] {
+        let query = themeSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return [] }
+        return Array(
+            themes
+                .filter { theme in
+                    (selectedSetId == nil || theme.setId == selectedSetId)
+                        && theme.name.localizedStandardContains(query)
+                }
+                .prefix(6)
+        )
+    }
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                FilterChip(
-                    title: String(localized: "All"),
-                    isSelected: selectedSetId == nil
+                SelectedFilterChip(
+                    title: selectedSet?.name ?? String(localized: "All Albums"),
+                    systemImage: "rectangle.stack",
+                    isActive: selectedSet != nil
                 ) {
                     selectedSetId = nil
+                    selectedThemeId = nil
+                    albumSearchText = ""
                 }
 
-                ForEach(memorySets) { memorySet in
-                    FilterChip(
-                        title: memorySet.name,
-                        isSelected: selectedSetId == memorySet.id
-                    ) {
-                        selectedSetId = memorySet.id
+                SelectedFilterChip(
+                    title: selectedTheme?.name ?? String(localized: "All Themes"),
+                    systemImage: "tag",
+                    isActive: selectedTheme != nil
+                ) {
+                    selectedThemeId = nil
+                    themeSearchText = ""
+                }
+            }
+
+            FilterSearchField(
+                title: String(localized: "Search albums"),
+                text: $albumSearchText,
+                systemImage: "magnifyingglass"
+            )
+
+            if !albumMatches.isEmpty {
+                FilterResultList {
+                    ForEach(albumMatches) { memorySet in
+                        FilterResultButton(title: memorySet.name, subtitle: "\(memorySet.photos.count) photos") {
+                            selectedSetId = memorySet.id
+                            selectedThemeId = nil
+                            albumSearchText = ""
+                            themeSearchText = ""
+                        }
                     }
                 }
             }
-            .padding(.horizontal)
+
+            FilterSearchField(
+                title: String(localized: "Search themes"),
+                text: $themeSearchText,
+                systemImage: "tag"
+            )
+
+            if !themeMatches.isEmpty {
+                FilterResultList {
+                    ForEach(themeMatches) { theme in
+                        FilterResultButton(title: theme.name, subtitle: theme.set?.name ?? String(localized: "Album")) {
+                            selectedThemeId = theme.id
+                            if selectedSetId == nil {
+                                selectedSetId = theme.setId
+                            }
+                            themeSearchText = ""
+                        }
+                    }
+                }
+            }
         }
+        .padding(10)
+        .frame(maxWidth: 360)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.white.opacity(0.58), lineWidth: 1)
+        }
+        .padding(.horizontal, 12)
     }
 }
 
-private struct FilterChip: View {
+private struct SelectedFilterChip: View {
     let title: String
-    let isSelected: Bool
+    let systemImage: String
+    let isActive: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.subheadline.weight(.semibold))
+            Label(title, systemImage: systemImage)
+                .font(.caption.weight(.semibold))
                 .lineLimit(1)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(isSelected ? PalaceStyle.coral : .white.opacity(0.82), in: Capsule())
-                .foregroundStyle(isSelected ? .white : PalaceStyle.ink)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .frame(maxWidth: .infinity)
+                .background(isActive ? PalaceStyle.coral : .white.opacity(0.82), in: Capsule())
+                .foregroundStyle(isActive ? .white : PalaceStyle.ink)
                 .overlay {
                     Capsule()
-                        .stroke(isSelected ? .clear : PalaceStyle.paperDeep.opacity(0.5), lineWidth: 1)
+                        .stroke(isActive ? .clear : PalaceStyle.paperDeep.opacity(0.5), lineWidth: 1)
                 }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct FilterSearchField: View {
+    let title: String
+    @Binding var text: String
+    let systemImage: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .foregroundStyle(PalaceStyle.mutedInk)
+            TextField(title, text: $text)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(PalaceStyle.mutedInk)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .font(.subheadline)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+private struct FilterResultList<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(spacing: 0) {
+            content()
+        }
+        .background(.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(PalaceStyle.paperDeep.opacity(0.5), lineWidth: 1)
+        }
+    }
+}
+
+private struct FilterResultButton: View {
+    let title: String
+    let subtitle: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(PalaceStyle.ink)
+                        .lineLimit(1)
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(PalaceStyle.mutedInk)
+                        .lineLimit(1)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(PalaceStyle.mutedInk)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
         }
         .buttonStyle(.plain)
     }

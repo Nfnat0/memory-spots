@@ -69,7 +69,11 @@ struct HomeView: View {
                             MemorySetRow(
                                 memorySet: memorySet,
                                 photoCount: memorySet.photos.count,
-                                themeCount: memorySet.themes.count
+                                themeCount: memorySet.themes.count,
+                                thumbnailImagePath: memorySet.photos
+                                    .sorted { $0.orderIndex < $1.orderIndex }
+                                    .first?
+                                    .imagePath
                             )
                         }
                         .buttonStyle(.plain)
@@ -178,17 +182,20 @@ private struct MemorySetRow: View {
     let memorySet: MemorySet
     let photoCount: Int
     let themeCount: Int
+    let thumbnailImagePath: String?
 
     var body: some View {
         HStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(PalaceStyle.sage.opacity(0.16))
-                Image(systemName: "map.fill")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(PalaceStyle.sage)
+            if let thumbnailImagePath {
+                MemoryPhotoView(imagePath: thumbnailImagePath) {
+                    placeholderThumbnail
+                }
+                .scaledToFill()
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                placeholderThumbnail
             }
-            .frame(width: 52, height: 52)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(memorySet.name)
@@ -209,6 +216,17 @@ private struct MemorySetRow: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(PalaceStyle.paperDeep.opacity(0.42), lineWidth: 1)
         }
+    }
+
+    private var placeholderThumbnail: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(PalaceStyle.sage.opacity(0.16))
+            Image(systemName: "map.fill")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(PalaceStyle.sage)
+        }
+        .frame(width: 52, height: 52)
     }
 }
 
