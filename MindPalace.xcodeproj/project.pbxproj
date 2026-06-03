@@ -412,7 +412,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalaceTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
@@ -430,7 +430,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalaceTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
@@ -448,7 +448,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalace;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalace;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -527,7 +527,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nf.MindPalace;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalace;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
