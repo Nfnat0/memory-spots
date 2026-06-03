@@ -13,6 +13,7 @@ struct MemoryMapView: View {
     @State private var selectedThemeId: UUID?
     @State private var albumSearchText = ""
     @State private var themeSearchText = ""
+    @State private var isFilterSheetPresented = false
     @State private var selectedPhotoId: UUID?
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var animatedSelectedPhoto: MemoryPhoto? = nil
@@ -75,32 +76,48 @@ struct MemoryMapView: View {
             }
 
             VStack(spacing: 10) {
-                VStack(spacing: 3) {
-                    Text("Memory Map")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(PalaceStyle.ink)
-                    Text("Follow your memory path")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(PalaceStyle.mutedInk)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(.white.opacity(0.58), lineWidth: 1)
-                }
+                Text("Memory Map")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(PalaceStyle.ink)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(.white.opacity(0.58), lineWidth: 1)
+                    }
 
-                SearchFilterPanel(
-                    memorySets: memorySets,
-                    themes: themes,
-                    selectedSetId: $selectedSetId,
-                    selectedThemeId: $selectedThemeId,
-                    albumSearchText: $albumSearchText,
-                    themeSearchText: $themeSearchText
+                MapFilterBar(
+                    selectedSet: selectedSet,
+                    selectedTheme: selectedTheme,
+                    showFilters: {
+                        isFilterSheetPresented = true
+                    },
+                    clearSet: {
+                        selectedSetId = nil
+                        selectedThemeId = nil
+                        albumSearchText = ""
+                        themeSearchText = ""
+                    },
+                    clearTheme: {
+                        selectedThemeId = nil
+                        themeSearchText = ""
+                    }
                 )
             }
             .padding(.top, 8)
+        }
+        .sheet(isPresented: $isFilterSheetPresented) {
+            FilterSelectionSheet(
+                memorySets: memorySets,
+                themes: themes,
+                selectedSetId: $selectedSetId,
+                selectedThemeId: $selectedThemeId,
+                albumSearchText: $albumSearchText,
+                themeSearchText: $themeSearchText
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .safeAreaInset(edge: .bottom) {
             if let animatedSelectedPhoto {
@@ -191,13 +208,71 @@ private struct MapEmptyState: View {
     }
 }
 
-private struct SearchFilterPanel: View {
+private struct MapFilterBar: View {
+    let selectedSet: MemorySet?
+    let selectedTheme: MemoryTheme?
+    let showFilters: () -> Void
+    let clearSet: () -> Void
+    let clearTheme: () -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Button(action: showFilters) {
+                Image(systemName: "slider.horizontal.3")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(PalaceStyle.ink)
+                    .frame(width: 40, height: 38)
+                    .background(.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 8))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(PalaceStyle.paperDeep.opacity(0.55), lineWidth: 1)
+                    }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(String(localized: "Filters"))
+
+            HStack(spacing: 8) {
+                SelectedFilterChip(
+                    title: selectedSet?.name ?? String(localized: "Albums"),
+                    systemImage: "rectangle.stack",
+                    isActive: selectedSet != nil,
+                    action: selectedSet == nil ? showFilters : clearSet
+                )
+
+                SelectedFilterChip(
+                    title: selectedTheme?.name ?? String(localized: "Themes"),
+                    systemImage: "tag",
+                    isActive: selectedTheme != nil,
+                    action: selectedTheme == nil ? showFilters : clearTheme
+                )
+            }
+        }
+        .padding(8)
+        .frame(maxWidth: 360)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.white.opacity(0.58), lineWidth: 1)
+        }
+        .padding(.horizontal, 12)
+    }
+}
+
+private enum FilterSearchFocusField: Hashable {
+    case album
+    case theme
+}
+
+private struct FilterSelectionSheet: View {
     let memorySets: [MemorySet]
     let themes: [MemoryTheme]
     @Binding var selectedSetId: UUID?
     @Binding var selectedThemeId: UUID?
     @Binding var albumSearchText: String
     @Binding var themeSearchText: String
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focusedField: FilterSearchFocusField?
 
     private var selectedSet: MemorySet? {
         guard let selectedSetId else { return nil }
@@ -229,75 +304,102 @@ private struct SearchFilterPanel: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                SelectedFilterChip(
-                    title: selectedSet?.name ?? String(localized: "All Albums"),
-                    systemImage: "rectangle.stack",
-                    isActive: selectedSet != nil
-                ) {
-                    selectedSetId = nil
-                    selectedThemeId = nil
-                    albumSearchText = ""
-                }
-
-                SelectedFilterChip(
-                    title: selectedTheme?.name ?? String(localized: "All Themes"),
-                    systemImage: "tag",
-                    isActive: selectedTheme != nil
-                ) {
-                    selectedThemeId = nil
-                    themeSearchText = ""
-                }
-            }
-
-            FilterSearchField(
-                title: String(localized: "Search albums"),
-                text: $albumSearchText,
-                systemImage: "magnifyingglass"
-            )
-
-            if !albumMatches.isEmpty {
-                FilterResultList {
-                    ForEach(albumMatches) { memorySet in
-                        FilterResultButton(title: memorySet.name, subtitle: "\(memorySet.photos.count) photos") {
-                            selectedSetId = memorySet.id
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 8) {
+                        SelectedFilterChip(
+                            title: selectedSet?.name ?? String(localized: "Albums"),
+                            systemImage: "rectangle.stack",
+                            isActive: selectedSet != nil
+                        ) {
+                            focusedField = nil
+                            selectedSetId = nil
                             selectedThemeId = nil
                             albumSearchText = ""
                             themeSearchText = ""
                         }
-                    }
-                }
-            }
 
-            FilterSearchField(
-                title: String(localized: "Search themes"),
-                text: $themeSearchText,
-                systemImage: "tag"
-            )
-
-            if !themeMatches.isEmpty {
-                FilterResultList {
-                    ForEach(themeMatches) { theme in
-                        FilterResultButton(title: theme.name, subtitle: theme.set?.name ?? String(localized: "Album")) {
-                            selectedThemeId = theme.id
-                            if selectedSetId == nil {
-                                selectedSetId = theme.setId
-                            }
+                        SelectedFilterChip(
+                            title: selectedTheme?.name ?? String(localized: "Themes"),
+                            systemImage: "tag",
+                            isActive: selectedTheme != nil
+                        ) {
+                            focusedField = nil
+                            selectedThemeId = nil
                             themeSearchText = ""
                         }
                     }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        FilterSearchField(
+                            title: String(localized: "Search albums"),
+                            text: $albumSearchText,
+                            systemImage: "magnifyingglass",
+                            focusField: .album,
+                            focusedField: $focusedField
+                        )
+
+                        if !albumMatches.isEmpty {
+                            FilterResultList {
+                                ForEach(albumMatches) { memorySet in
+                                    FilterResultButton(title: memorySet.name, subtitle: String(localized: "\(memorySet.photos.count) photos")) {
+                                        focusedField = nil
+                                        selectedSetId = memorySet.id
+                                        selectedThemeId = nil
+                                        albumSearchText = ""
+                                        themeSearchText = ""
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        FilterSearchField(
+                            title: String(localized: "Search themes"),
+                            text: $themeSearchText,
+                            systemImage: "tag",
+                            focusField: .theme,
+                            focusedField: $focusedField
+                        )
+
+                        if !themeMatches.isEmpty {
+                            FilterResultList {
+                                ForEach(themeMatches) { theme in
+                                    FilterResultButton(title: theme.name, subtitle: theme.set?.name ?? String(localized: "Album")) {
+                                        focusedField = nil
+                                        selectedThemeId = theme.id
+                                        if selectedSetId == nil {
+                                            selectedSetId = theme.setId
+                                        }
+                                        themeSearchText = ""
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(16)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(String(localized: "Memory Map"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        focusedField = nil
+                        dismiss()
+                    }
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        focusedField = nil
+                    }
                 }
             }
         }
-        .padding(10)
-        .frame(maxWidth: 360)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(.white.opacity(0.58), lineWidth: 1)
-        }
-        .padding(.horizontal, 12)
     }
 }
 
@@ -330,6 +432,8 @@ private struct FilterSearchField: View {
     let title: String
     @Binding var text: String
     let systemImage: String
+    let focusField: FilterSearchFocusField
+    @FocusState.Binding var focusedField: FilterSearchFocusField?
 
     var body: some View {
         HStack(spacing: 8) {
@@ -338,9 +442,15 @@ private struct FilterSearchField: View {
             TextField(title, text: $text)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .focused($focusedField, equals: focusField)
+                .submitLabel(.done)
+                .onSubmit {
+                    focusedField = nil
+                }
             if !text.isEmpty {
                 Button {
                     text = ""
+                    focusedField = focusField
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(PalaceStyle.mutedInk)

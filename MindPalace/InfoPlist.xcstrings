@@ -1,81 +1,93 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "CFBundleDisplayName": {
-      "comment": "Bundle display name",
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Mind Palace"
-          }
-        }
-      }
-    },
-    "CFBundleName": {
-      "comment": "Bundle name",
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "ja": {
-          "stringUnit": {
-            "state": "new",
-            "value": "MindPalace"
-          }
-        }
-      }
-    },
-    "NSCameraUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Use the camera to take landmark photos along your memory route."
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mind Palace"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "記憶の道順に沿った道しるべ写真を撮影するためにカメラを使用します。"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mind Palace"
           }
         }
       }
     },
-    "NSLocationWhenInUseUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show your location on the map and tag photos with geographic coordinates."
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "MindPalace"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "マップ上に現在地を表示し、写真に位置情報を追加するために位置情報を使用します。"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MindPalace"
           }
         }
       }
     },
-    "NSPhotoLibraryUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choose landmark photos from your library to add to your memory route."
+    "NSCameraUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the camera to take landmark photos along your memory route."
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "記憶の道順に追加する道しるべ写真をライブラリから選択するために写真ライブラリを使用します。"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記憶の道順に沿った道しるべ写真を撮影するためにカメラを使用します。"
+          }
+        }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show your location on the map and tag photos with geographic coordinates."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マップ上に現在地を表示し、写真に位置情報を追加するために位置情報を使用します。"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose landmark photos from your library to add to your memory route."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記憶の道順に追加する道しるべ写真をライブラリから選択するために写真ライブラリを使用します。"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

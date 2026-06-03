@@ -12,7 +12,6 @@ struct MemorySetDetailView: View {
 
     @Query private var photos: [MemoryPhoto]
     @Query private var themes: [MemoryTheme]
-    @Query private var items: [MemoryItem]
     @Query private var reviewResults: [ReviewResult]
 
     @State private var selectedThemeId: UUID?
@@ -38,14 +37,8 @@ struct MemorySetDetailView: View {
         return setThemes.first { $0.id == id }
     }
 
-    private var headerNoteCount: Int {
-        let photoIds = Set(setPhotos.map(\.id))
-        return items.filter { photoIds.contains($0.photoId) }.count
-    }
-
     var body: some View {
         List {
-            headerSection
             themeSection
             reviewSection
             photosSection
@@ -94,20 +87,6 @@ struct MemorySetDetailView: View {
         }
     }
 
-    private var headerSection: some View {
-        Section {
-            MemorySetHeaderCard(
-                memorySet: memorySet,
-                photoCount: setPhotos.count,
-                themeCount: setThemes.count,
-                noteCount: headerNoteCount
-            )
-        }
-        .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 8, trailing: 16))
-        .listRowSeparator(.hidden)
-        .listRowBackground(Color.clear)
-    }
-
     private var themeSection: some View {
         Section {
             if setThemes.isEmpty {
@@ -124,25 +103,32 @@ struct MemorySetDetailView: View {
                                 ThemeChip(title: theme.name, isSelected: isSelected(theme))
                             }
                             .buttonStyle(.plain)
+                            .contextMenu {
+                                Button("Delete Theme", systemImage: "trash", role: .destructive) {
+                                    deleteTheme(theme)
+                                }
+                                .disabled(setThemes.count < 2)
+                            }
                         }
-                    }
-                }
 
-                HStack {
-                    Button("Add Theme") {
-                        isAddingTheme = true
+                        Button {
+                            isAddingTheme = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(PalaceStyle.ink)
+                                .frame(width: 34, height: 34)
+                                .background(.white.opacity(0.72), in: Circle())
+                                .overlay {
+                                    Circle()
+                                        .stroke(PalaceStyle.paperDeep.opacity(0.5), lineWidth: 1)
+                                }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(localized: "Add Theme"))
                     }
-
-                    Spacer()
-
-                    Button("Delete Selected Theme", role: .destructive) {
-                        deleteSelectedTheme()
-                    }
-                    .disabled(setThemes.count < 2 || selectedTheme == nil)
                 }
             }
-        } header: {
-            Text("Themes")
         }
         .listRowBackground(Color.white.opacity(0.62))
     }
@@ -186,8 +172,6 @@ struct MemorySetDetailView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             }
-        } header: {
-            Text("Waypoint Photos")
         }
     }
 
@@ -222,12 +206,14 @@ struct MemorySetDetailView: View {
         try? modelContext.save()
     }
 
-    private func deleteSelectedTheme() {
-        guard let selectedTheme else {
-            return
+    private func deleteTheme(_ theme: MemoryTheme) {
+        let fallbackThemeId = setThemes.first { $0.id != theme.id }?.id
+        let isDeletingSelectedTheme = selectedTheme?.id == theme.id
+
+        modelContext.delete(theme)
+        if isDeletingSelectedTheme {
+            selectedThemeId = fallbackThemeId
         }
-        modelContext.delete(selectedTheme)
-        selectedThemeId = setThemes.first { $0.id != selectedTheme.id }?.id
         memorySet.updatedAt = Date()
         try? modelContext.save()
     }
@@ -280,35 +266,6 @@ private struct ThemeChip: View {
                 Capsule()
                     .stroke(PalaceStyle.paperDeep.opacity(0.5), lineWidth: isSelected ? 0 : 1)
             }
-    }
-}
-
-private struct MemorySetHeaderCard: View {
-    let memorySet: MemorySet
-    let photoCount: Int
-    let themeCount: Int
-    let noteCount: Int
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(memorySet.name)
-                .font(.title3.weight(.bold))
-                .foregroundStyle(PalaceStyle.ink)
-                .lineLimit(2)
-
-            HStack(spacing: 6) {
-                NotebookLabel(text: "\(photoCount)", systemImage: "photo")
-                NotebookLabel(text: "\(themeCount)", systemImage: "tag")
-                NotebookLabel(text: "\(noteCount)", systemImage: "note.text")
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(PalaceStyle.paperDeep.opacity(0.42), lineWidth: 1)
-        }
     }
 }
 

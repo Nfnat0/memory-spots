@@ -5,12 +5,11 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
 
     @Query(sort: \MemorySet.updatedAt, order: .reverse) private var memorySets: [MemorySet]
-    @Query private var photos: [MemoryPhoto]
-    @Query private var themes: [MemoryTheme]
     @Query private var items: [MemoryItem]
     @Query private var reviewResults: [ReviewResult]
 
     @State private var isAddingSet = false
+    @State private var albumSearchText = ""
     @State private var renamingSet: MemorySet?
     @State private var openingSet: MemorySet?
     @AppStorage("hasCompletedTutorial") private var hasCompletedTutorial = false
@@ -43,17 +42,6 @@ struct HomeView: View {
     private var setList: some View {
         NavigationStack {
             List {
-                Section {
-                    AlbumHeroCard(
-                        setCount: memorySets.count,
-                        photoCount: photos.count,
-                        themeCount: themes.count
-                    )
-                }
-                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 10, trailing: 16))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-
                 if memorySets.isEmpty {
                     ContentUnavailableView(
                         "No Albums",
@@ -61,8 +49,15 @@ struct HomeView: View {
                         description: Text("Pin photos on the map to create waypoints for your memory palace.")
                     )
                     .listRowBackground(Color.clear)
+                } else if filteredMemorySets.isEmpty {
+                    ContentUnavailableView(
+                        "No Albums",
+                        systemImage: "magnifyingglass",
+                        description: Text("No albums match your search.")
+                    )
+                    .listRowBackground(Color.clear)
                 } else {
-                    ForEach(memorySets) { memorySet in
+                    ForEach(filteredMemorySets) { memorySet in
                         Button {
                             openingSet = memorySet
                         } label: {
@@ -98,6 +93,11 @@ struct HomeView: View {
             .scrollContentBackground(.hidden)
             .background(NotebookBackground())
             .navigationTitle("Albums")
+            .searchable(
+                text: $albumSearchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: Text("Search albums")
+            )
             .navigationDestination(item: $openingSet) { memorySet in
                 MemorySetDetailView(memorySet: memorySet)
             }
@@ -127,6 +127,17 @@ struct HomeView: View {
         }
     }
 
+    private var filteredMemorySets: [MemorySet] {
+        let query = albumSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            return memorySets
+        }
+        return memorySets.filter { memorySet in
+            memorySet.name.localizedStandardContains(query)
+                || memorySet.themes.contains { $0.name.localizedStandardContains(query) }
+        }
+    }
+
     private func createSet(named name: String) {
         let memorySet = MemorySet(name: name)
         let theme = MemoryTheme(setId: memorySet.id, name: String(localized: "Default"))
@@ -142,39 +153,6 @@ struct HomeView: View {
         }
         modelContext.delete(memorySet)
         try? modelContext.save()
-    }
-}
-
-private struct AlbumHeroCard: View {
-    let setCount: Int
-    let photoCount: Int
-    let themeCount: Int
-
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            NotebookHeroImage()
-                .frame(height: 170)
-
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Map your photos, notes, and memories.")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(PalaceStyle.ink)
-                    .lineLimit(2)
-
-                HStack(spacing: 8) {
-                    NotebookLabel(text: String(localized: "\(setCount) albums"), systemImage: "rectangle.stack")
-                    NotebookLabel(text: String(localized: "\(photoCount) photos"), systemImage: "photo")
-                    NotebookLabel(text: String(localized: "\(themeCount) themes"), systemImage: "tag")
-                }
-            }
-            .padding(14)
-        }
-        .background(.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 8))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(.white.opacity(0.62), lineWidth: 1)
-        }
-        .shadow(color: PalaceStyle.ink.opacity(0.12), radius: 12, y: 6)
     }
 }
 
@@ -210,6 +188,7 @@ private struct MemorySetRow: View {
             }
         }
         .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(RoundedRectangle(cornerRadius: 8))
         .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
