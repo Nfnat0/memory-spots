@@ -9,7 +9,7 @@ struct MemoryItemView: View {
         Group {
             switch item.itemType {
             case .stickyText:
-                Text(maskFrontText ? "?" : (item.frontText.isEmpty ? "メモ" : item.frontText))
+                Text(maskFrontText ? "?" : (item.frontText.isEmpty ? String(localized: "Note") : item.frontText))
                     .font(isMiniature ? .system(size: 8, weight: .semibold) : .callout.weight(.semibold))
                     .foregroundStyle(PalaceStyle.ink)
                     .lineLimit(3)
@@ -31,7 +31,7 @@ struct MemoryItemView: View {
                         }
                     } else {
                         MemoryPhotoView(imagePath: imagePath) {
-                            Label("画像", systemImage: "photo")
+                            Label("Image", systemImage: "photo")
                                 .padding(isMiniature ? 6 : 12)
                                 .background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: isMiniature ? 4 : 8))
                         }
@@ -40,7 +40,7 @@ struct MemoryItemView: View {
                         .clipShape(RoundedRectangle(cornerRadius: isMiniature ? 4 : 8))
                     }
                 } else {
-                    Label("画像", systemImage: "photo")
+                    Label("Image", systemImage: "photo")
                         .padding(isMiniature ? 6 : 12)
                         .background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: isMiniature ? 4 : 8))
                 }
@@ -75,7 +75,7 @@ struct MemoryItemView: View {
         .accessibilityLabel(
             item.frontText.isEmpty 
                 ? item.itemType.title 
-                : String(localized: "\(item.itemType.title): \(item.frontText)")
+                : "\(item.itemType.title): \(item.frontText)"
         )
     }
 

@@ -23,9 +23,9 @@ struct ReviewView: View {
         VStack(spacing: 0) {
             if orderedPhotos.isEmpty {
                 ContentUnavailableView(
-                    "めぐるメモがありません",
+                    "No Notes to Review",
                     systemImage: "map",
-                    description: Text("このテーマにメモを置くと、写真の道順でたどれます。")
+                    description: Text("Add notes to this theme to walk through them in photo order.")
                 )
             } else {
                 TabView(selection: $currentIndex) {
@@ -40,7 +40,7 @@ struct ReviewView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .overlay(alignment: .topLeading) {
-                    Text("\(currentIndex + 1) / \(orderedPhotos.count)")
+                    Text(verbatim: "\(currentIndex + 1) / \(orderedPhotos.count)")
                         .font(.caption.weight(.semibold))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
@@ -121,7 +121,7 @@ private struct RevealedMemoryItemView: View {
     let item: MemoryItem
 
     var body: some View {
-        Text(item.backText.isEmpty ? "答えは未入力です。" : item.backText)
+        Text(item.backText.isEmpty ? String(localized: "Answer is empty.") : item.backText)
             .font(.callout.weight(.semibold))
             .foregroundStyle(PalaceStyle.ink)
             .lineLimit(6)

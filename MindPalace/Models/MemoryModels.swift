@@ -154,15 +154,15 @@ enum MemoryItemType: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
         case .stickyText:
-            String(localized: "付箋")
+            String(localized: "Sticky Note")
         case .image:
-            String(localized: "画像")
+            String(localized: "Image")
         case .icon:
-            String(localized: "アイコン")
+            String(localized: "Icon")
         case .numberLabel:
-            String(localized: "番号")
+            String(localized: "Number")
         case .arrow:
-            String(localized: "矢印")
+            String(localized: "Arrow")
         }
     }
 
@@ -209,11 +209,11 @@ enum ReviewGrade: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .remembered:
-            String(localized: "覚えた")
+            String(localized: "Got it")
         case .unsure:
-            String(localized: "微妙")
+            String(localized: "Unsure")
         case .forgot:
-            String(localized: "忘れた")
+            String(localized: "Forgot")
         }
     }
 }

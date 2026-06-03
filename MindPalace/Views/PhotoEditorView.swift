@@ -87,7 +87,7 @@ struct PhotoEditorView: View {
                                         editingItem = item
                                     }
                                     .contextMenu {
-                                        Button("メモを削除", role: .destructive) {
+                                        Button("Delete Note", role: .destructive) {
                                             delete(item)
                                         }
                                     }
@@ -115,7 +115,7 @@ struct PhotoEditorView: View {
                     }
                 }
             } else {
-                ProgressView("読み込み中...")
+                ProgressView("Loading...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(NotebookBackground())
             }
@@ -128,7 +128,7 @@ struct PhotoEditorView: View {
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 8) {
                 HStack {
-                    Label("現在のテーマ: \(theme.name)", systemImage: "tag")
+                    Label("Theme: \(theme.name)", systemImage: "tag")
                         .font(.caption.weight(.bold))
                         .foregroundStyle(PalaceStyle.mutedInk)
                         .padding(.horizontal, 10)
@@ -230,7 +230,7 @@ struct PhotoEditorView: View {
                 photoId: photo.id,
                 themeId: theme.id,
                 type: .image,
-                frontText: "画像メモ",
+                frontText: String(localized: "Image Note"),
                 backText: "",
                 imagePath: imagePath,
                 scale: 1,
@@ -290,15 +290,15 @@ struct PhotoEditorView: View {
     private func defaultFrontText(for type: MemoryItemType) -> String {
         switch type {
         case .stickyText:
-            "新しいメモ"
+            String(localized: "New Note")
         case .image:
-            "画像メモ"
+            String(localized: "Image Note")
         case .icon:
-            "スター"
+            String(localized: "Star")
         case .numberLabel:
             "\(themeItems.filter { $0.itemType == .numberLabel }.count + 1)"
         case .arrow:
-            "矢印"
+            String(localized: "Arrow")
         }
     }
 }
@@ -315,37 +315,37 @@ private struct NoteEditorView: View {
             Form {
                 Section(item.itemType.title) {
                     if item.itemType == .icon {
-                        Picker("アイコン", selection: iconBinding) {
-                            Label("スター", systemImage: "star.fill").tag("star.fill")
-                            Label("雲", systemImage: "cloud.fill").tag("cloud.fill")
-                            Label("鍵", systemImage: "key.fill").tag("key.fill")
-                            Label("旗", systemImage: "flag.fill").tag("flag.fill")
+                        Picker("Icon", selection: iconBinding) {
+                            Label("Star", systemImage: "star.fill").tag("star.fill")
+                            Label("Cloud", systemImage: "cloud.fill").tag("cloud.fill")
+                            Label("Key", systemImage: "key.fill").tag("key.fill")
+                            Label("Flag", systemImage: "flag.fill").tag("flag.fill")
                         }
                     }
 
                     if item.itemType == .stickyText {
-                        Picker("色", selection: colorBinding) {
-                            Text("黄色").tag("yellow")
-                            Text("ピンク").tag("pink")
-                            Text("水色").tag("blue")
-                            Text("緑").tag("green")
+                        Picker("Color", selection: colorBinding) {
+                            Text("Yellow").tag("yellow")
+                            Text("Pink").tag("pink")
+                            Text("Blue").tag("blue")
+                            Text("Green").tag("green")
                         }
                         .pickerStyle(.segmented)
                     }
 
                     if item.itemType != .image && item.itemType != .arrow {
-                        TextField("表示テキスト", text: $item.frontText, axis: .vertical)
+                        TextField("Display Text", text: $item.frontText, axis: .vertical)
                             .lineLimit(1...6)
                     }
                 }
 
-                Section("答え") {
-                    TextField("答えテキスト", text: $item.backText, axis: .vertical)
+                Section("Answer") {
+                    TextField("Answer Details", text: $item.backText, axis: .vertical)
                         .lineLimit(3...8)
                 }
 
                 Section {
-                    Button("メモを削除", role: .destructive) {
+                    Button("Delete Note", role: .destructive) {
                         onDelete()
                         dismiss()
                     }
@@ -353,10 +353,10 @@ private struct NoteEditorView: View {
             }
             .scrollContentBackground(.hidden)
             .background(NotebookBackground())
-            .navigationTitle("メモ編集")
+            .navigationTitle("Edit Note")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("完了") {
+                    Button("Done") {
                         item.updatedAt = Date()
                         try? modelContext.save()
                         dismiss()

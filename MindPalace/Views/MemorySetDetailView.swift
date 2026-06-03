@@ -59,7 +59,7 @@ struct MemorySetDetailView: View {
                 Button {
                     isAddingPhoto = true
                 } label: {
-                    Label("写真を追加", systemImage: "photo.badge.plus")
+                    Label("Add Photo", systemImage: "photo.badge.plus")
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -76,11 +76,11 @@ struct MemorySetDetailView: View {
             if let selectedTheme {
                 PhotoEditorView(photo: photo, theme: selectedTheme)
             } else {
-                ContentUnavailableView("テーマがありません", systemImage: "tag")
+                ContentUnavailableView("No Themes", systemImage: "tag")
             }
         }
         .sheet(isPresented: $isAddingTheme) {
-            SetNameEditor(title: "テーマを作成", initialName: "") { name in
+            SetNameEditor(title: String(localized: "Create Theme"), initialName: "") { name in
                 createTheme(named: name)
             }
             .presentationDetents([.medium])
@@ -111,7 +111,7 @@ struct MemorySetDetailView: View {
     private var themeSection: some View {
         Section {
             if setThemes.isEmpty {
-                Button("デフォルトテーマを作成") {
+                Button("Create Default Theme") {
                     createDefaultTheme()
                 }
             } else {
@@ -129,20 +129,20 @@ struct MemorySetDetailView: View {
                 }
 
                 HStack {
-                    Button("テーマ追加") {
+                    Button("Add Theme") {
                         isAddingTheme = true
                     }
 
                     Spacer()
 
-                    Button("選択テーマを削除", role: .destructive) {
+                    Button("Delete Selected Theme", role: .destructive) {
                         deleteSelectedTheme()
                     }
                     .disabled(setThemes.count < 2 || selectedTheme == nil)
                 }
             }
         } header: {
-            Text("ノートの切り口")
+            Text("Themes")
         }
         .listRowBackground(Color.white.opacity(0.62))
     }
@@ -154,7 +154,7 @@ struct MemorySetDetailView: View {
                 NavigationLink {
                     ReviewView(memorySet: memorySet, theme: selectedTheme)
                 } label: {
-                    Label("メモをめぐる", systemImage: "play.circle")
+                    Label("Review Notes", systemImage: "play.circle")
                 }
                 .disabled(reviewItems(for: selectedTheme).isEmpty)
             }
@@ -166,9 +166,9 @@ struct MemorySetDetailView: View {
         Section {
             if setPhotos.isEmpty {
                 ContentUnavailableView(
-                    "写真がありません",
+                    "No Photos",
                     systemImage: "photo.on.rectangle",
-                    description: Text("この旅の道しるべになる写真を追加してください。")
+                    description: Text("Add some photos to guide your memory path.")
                 )
                 .listRowBackground(Color.clear)
             } else {
@@ -187,7 +187,7 @@ struct MemorySetDetailView: View {
                 .listRowBackground(Color.clear)
             }
         } header: {
-            Text("道しるべ写真")
+            Text("Waypoint Photos")
         }
     }
 
@@ -210,7 +210,7 @@ struct MemorySetDetailView: View {
     }
 
     private func createDefaultTheme() {
-        createTheme(named: "デフォルト")
+        createTheme(named: String(localized: "Default"))
     }
 
     private func createTheme(named name: String) {
@@ -290,29 +290,20 @@ private struct MemorySetHeaderCard: View {
     let noteCount: Int
 
     var body: some View {
-        HStack(spacing: 14) {
-            NotebookHeroImage()
-                .frame(width: 108, height: 96)
-                .shadow(color: PalaceStyle.ink.opacity(0.12), radius: 8, y: 4)
+        VStack(alignment: .leading, spacing: 10) {
+            Text(memorySet.name)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(PalaceStyle.ink)
+                .lineLimit(2)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(memorySet.name)
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(PalaceStyle.ink)
-                    .lineLimit(2)
-                Text("写真をたどって、頭の中に小さな散歩道を作ります。")
-                    .font(.caption)
-                    .foregroundStyle(PalaceStyle.mutedInk)
-                    .lineLimit(2)
-
-                HStack(spacing: 6) {
-                    NotebookLabel(text: "\(photoCount)", systemImage: "photo")
-                    NotebookLabel(text: "\(themeCount)", systemImage: "tag")
-                    NotebookLabel(text: "\(noteCount)", systemImage: "note.text")
-                }
+            HStack(spacing: 6) {
+                NotebookLabel(text: "\(photoCount)", systemImage: "photo")
+                NotebookLabel(text: "\(themeCount)", systemImage: "tag")
+                NotebookLabel(text: "\(noteCount)", systemImage: "note.text")
             }
         }
-        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
         .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
@@ -328,63 +319,52 @@ private struct PhotoRouteRow: View {
     let onOpen: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            PhotoRow(photo: photo, noteCount: noteCount)
-
-            HStack {
-                Button {
-                    onEditLocation()
-                } label: {
-                    Label(
-                        photo.latitude == nil ? "場所を追加する" : "場所を変更する",
-                        systemImage: photo.latitude == nil ? "mappin.and.ellipse" : "mappin"
-                    )
-                    .font(.caption)
+        HStack(spacing: 12) {
+            HStack(spacing: 12) {
+                MemoryPhotoView(imagePath: photo.imagePath) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(.secondary.opacity(0.2))
+                        .frame(width: 64, height: 64)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .foregroundStyle(.secondary)
+                        }
                 }
-                .buttonStyle(.borderless)
+                .scaledToFill()
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(photo.title)
+                        .font(.headline)
+                        .foregroundStyle(PalaceStyle.ink)
+                    Label("\(noteCount) notes", systemImage: "note.text")
+                        .font(.subheadline)
+                        .foregroundStyle(PalaceStyle.mutedInk)
+                }
 
                 Spacer()
-
-                Button {
-                    onOpen()
-                } label: {
-                    Label("開く", systemImage: "arrow.up.right")
-                        .font(.caption.weight(.semibold))
-                }
-                .buttonStyle(.bordered)
             }
-            .padding(.horizontal, 4)
-        }
-    }
-}
-
-private struct PhotoRow: View {
-    let photo: MemoryPhoto
-    let noteCount: Int
-
-    var body: some View {
-        HStack(spacing: 12) {
-            MemoryPhotoView(imagePath: photo.imagePath) {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(.secondary.opacity(0.2))
-                    .frame(width: 64, height: 64)
-                    .overlay {
-                        Image(systemName: "photo")
-                            .foregroundStyle(.secondary)
-                    }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                onOpen()
             }
-            .scaledToFill()
-            .frame(width: 64, height: 64)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(photo.title)
-                    .font(.headline)
-                    .foregroundStyle(PalaceStyle.ink)
-                Label("\(noteCount) メモ", systemImage: "note.text")
-                    .font(.subheadline)
-                    .foregroundStyle(PalaceStyle.mutedInk)
+            Button {
+                onEditLocation()
+            } label: {
+                Image(systemName: photo.latitude == nil ? "mappin.and.ellipse" : "mappin")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(PalaceStyle.sage)
+                    .frame(width: 44, height: 44)
+                    .background(PalaceStyle.sage.opacity(0.14), in: RoundedRectangle(cornerRadius: 8))
+                    .accessibilityLabel(
+                        photo.latitude == nil
+                            ? String(localized: "Add Location")
+                            : String(localized: "Change Location")
+                    )
             }
+            .buttonStyle(.plain)
         }
         .padding(12)
         .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
@@ -412,26 +392,26 @@ private struct AddPhotoSheet: View {
             Form {
                 Section {
                     PhotosPicker(selection: $selectedItem, matching: .images) {
-                        Label("ライブラリから選択", systemImage: "photo.on.rectangle")
+                        Label("Choose from Library", systemImage: "photo.on.rectangle")
                     }
 
                     Button {
                         isShowingCamera = true
                     } label: {
-                        Label("カメラで撮影", systemImage: "camera")
+                        Label("Take Photo", systemImage: "camera")
                     }
                 }
 
                 if let coordinate = locationProvider.latestCoordinate {
-                    Section("位置情報") {
-                        Text("カメラ撮影ではこの場所に保存します。")
+                    Section("Location") {
+                        Text("Camera capture will be saved with this location.")
                             .foregroundStyle(.secondary)
-                        Text("緯度 \(coordinate.latitude.formatted(.number.precision(.fractionLength(4))))")
-                        Text("経度 \(coordinate.longitude.formatted(.number.precision(.fractionLength(4))))")
+                        Text("Latitude \(coordinate.latitude.formatted(.number.precision(.fractionLength(4))))")
+                        Text("Longitude \(coordinate.longitude.formatted(.number.precision(.fractionLength(4))))")
                     }
                 } else {
-                    Section("位置情報") {
-                        Text("場所なしでも写真を保存できます。あとから地図で場所を追加できます。")
+                    Section("Location") {
+                        Text("You can save photos without a location and add it on the map later.")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -443,10 +423,10 @@ private struct AddPhotoSheet: View {
                     }
                 }
             }
-            .navigationTitle("写真を追加")
+            .navigationTitle("Add Photo")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("閉じる") {
+                    Button("Close") {
                         dismiss()
                     }
                 }
@@ -476,7 +456,7 @@ private struct AddPhotoSheet: View {
                 let data = try await item.loadTransferable(type: Data.self),
                 let image = UIImage(data: data)
             else {
-                errorMessage = "画像を読み込めませんでした。"
+                errorMessage = String(localized: "Failed to load image.")
                 return
             }
             save(image, coordinate: libraryCoordinate(for: item))
@@ -490,7 +470,7 @@ private struct AddPhotoSheet: View {
             let imagePath = try ImageStore.saveImage(image)
             let photo = MemoryPhoto(
                 setId: memorySet.id,
-                title: "場所写真 \(nextOrderIndex + 1)",
+                title: String(localized: "Place Photo \(nextOrderIndex + 1)"),
                 imagePath: imagePath,
                 latitude: coordinate?.latitude,
                 longitude: coordinate?.longitude,

@@ -77,7 +77,7 @@ struct TutorialView: View {
                 Text("Place a Note in the Room")
                     .font(.title3.weight(.bold))
                     .foregroundStyle(PalaceStyle.ink)
-                Text(tappedCoord == nil ? "Tap anywhere on the photo to drop a sticky note." : "Type what you want to remember here.")
+                Text(tappedCoord == nil ? String(localized: "Tap anywhere on the photo to drop a sticky note.") : String(localized: "Type what you want to remember here."))
                     .font(.subheadline)
                     .foregroundStyle(PalaceStyle.mutedInk)
                     .multilineTextAlignment(.center)
@@ -125,7 +125,7 @@ struct TutorialView: View {
                         let noteY = imgFrame.minY + tappedCoord.y * imgFrame.height
 
                         VStack(spacing: 4) {
-                            Text(noteText.isEmpty ? "Keys" : noteText)
+                            Text(noteText.isEmpty ? String(localized: "Keys") : noteText)
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(PalaceStyle.ink)
                                 .padding(8)

@@ -40,7 +40,7 @@ struct LocationEditorView: View {
                 MapReader { proxy in
                     Map(position: $cameraPosition) {
                         if let draftCoordinate {
-                            Marker("この場所", coordinate: draftCoordinate)
+                            Marker("This Place", coordinate: draftCoordinate)
                         }
                     }
                     .mapControls {
@@ -61,11 +61,11 @@ struct LocationEditorView: View {
                     Text(photo.title)
                         .font(.headline)
                     if let draftCoordinate {
-                        Text("緯度 \(draftCoordinate.latitude.formatted(.number.precision(.fractionLength(5)))) / 経度 \(draftCoordinate.longitude.formatted(.number.precision(.fractionLength(5))))")
+                        Text("Latitude \(draftCoordinate.latitude.formatted(.number.precision(.fractionLength(5)))) / Longitude \(draftCoordinate.longitude.formatted(.number.precision(.fractionLength(5))))")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("地図をタップして場所を置けます。場所なしのままでも大丈夫です。")
+                        Text("Tap the map to place a waypoint. It is fine to leave it empty.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -74,22 +74,22 @@ struct LocationEditorView: View {
                 .padding()
                 .background(.regularMaterial)
             }
-            .navigationTitle("場所を置く")
+            .navigationTitle("Place Location")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("閉じる") {
+                    Button("Close") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("場所を外す") {
+                    Button("Remove Location") {
                         draftCoordinate = nil
                     }
                     .disabled(draftCoordinate == nil)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
+                    Button("Save") {
                         photo.latitude = draftCoordinate?.latitude
                         photo.longitude = draftCoordinate?.longitude
                         try? modelContext.save()

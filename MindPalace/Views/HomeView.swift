@@ -12,6 +12,7 @@ struct HomeView: View {
 
     @State private var isAddingSet = false
     @State private var renamingSet: MemorySet?
+    @State private var openingSet: MemorySet?
     @AppStorage("hasCompletedTutorial") private var hasCompletedTutorial = false
 
     var body: some View {
@@ -20,12 +21,12 @@ struct HomeView: View {
                 MemoryMapView()
             }
             .tabItem {
-                Label("記憶マップ", systemImage: "map")
+                Label("Memory Map", systemImage: "map")
             }
 
             setList
                 .tabItem {
-                    Label("アルバム", systemImage: "photo.stack")
+                    Label("Albums", systemImage: "photo.stack")
                 }
         }
         .task {
@@ -55,15 +56,15 @@ struct HomeView: View {
 
                 if memorySets.isEmpty {
                     ContentUnavailableView(
-                        "アルバムがありません",
+                        "No Albums",
                         systemImage: "map",
-                        description: Text("写真を道しるべにして、思い出すための小さな旅を作れます。")
+                        description: Text("Pin photos on the map to create waypoints for your memory palace.")
                     )
                     .listRowBackground(Color.clear)
                 } else {
                     ForEach(memorySets) { memorySet in
-                        NavigationLink {
-                            MemorySetDetailView(memorySet: memorySet)
+                        Button {
+                            openingSet = memorySet
                         } label: {
                             MemorySetRow(
                                 memorySet: memorySet,
@@ -71,17 +72,18 @@ struct HomeView: View {
                                 themeCount: memorySet.themes.count
                             )
                         }
+                        .buttonStyle(.plain)
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
                         .swipeActions(edge: .leading) {
-                            Button("名前変更") {
+                            Button("Rename") {
                                 renamingSet = memorySet
                             }
                             .tint(.blue)
                         }
                         .swipeActions(edge: .trailing) {
-                            Button("削除", role: .destructive) {
+                            Button("Delete", role: .destructive) {
                                 delete(memorySet)
                             }
                         }
@@ -91,24 +93,27 @@ struct HomeView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(NotebookBackground())
-            .navigationTitle("旅のアルバム")
+            .navigationTitle("Albums")
+            .navigationDestination(item: $openingSet) { memorySet in
+                MemorySetDetailView(memorySet: memorySet)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isAddingSet = true
                     } label: {
-                        Label("アルバムを追加", systemImage: "plus")
+                        Label("Add Album", systemImage: "plus")
                     }
                 }
             }
             .sheet(isPresented: $isAddingSet) {
-                SetNameEditor(title: "アルバムを作成", initialName: "") { name in
+                SetNameEditor(title: String(localized: "Create Album"), initialName: "") { name in
                     createSet(named: name)
                 }
                 .presentationDetents([.medium])
             }
             .sheet(item: $renamingSet) { memorySet in
-                SetNameEditor(title: "名前変更", initialName: memorySet.name) { name in
+                SetNameEditor(title: String(localized: "Rename"), initialName: memorySet.name) { name in
                     memorySet.name = name
                     memorySet.updatedAt = Date()
                     try? modelContext.save()
@@ -120,7 +125,7 @@ struct HomeView: View {
 
     private func createSet(named name: String) {
         let memorySet = MemorySet(name: name)
-        let theme = MemoryTheme(setId: memorySet.id, name: "デフォルト")
+        let theme = MemoryTheme(setId: memorySet.id, name: String(localized: "Default"))
         theme.set = memorySet
         modelContext.insert(memorySet)
         modelContext.insert(theme)
@@ -147,15 +152,15 @@ private struct AlbumHeroCard: View {
                 .frame(height: 170)
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("写真の道を、記憶のノートに。")
+                Text("Map your photos, notes, and memories.")
                     .font(.title2.weight(.bold))
                     .foregroundStyle(PalaceStyle.ink)
                     .lineLimit(2)
 
                 HStack(spacing: 8) {
-                    NotebookLabel(text: "\(setCount) アルバム", systemImage: "rectangle.stack")
-                    NotebookLabel(text: "\(photoCount) 写真", systemImage: "photo")
-                    NotebookLabel(text: "\(themeCount) テーマ", systemImage: "tag")
+                    NotebookLabel(text: String(localized: "\(setCount) albums"), systemImage: "rectangle.stack")
+                    NotebookLabel(text: String(localized: "\(photoCount) photos"), systemImage: "photo")
+                    NotebookLabel(text: String(localized: "\(themeCount) themes"), systemImage: "tag")
                 }
             }
             .padding(14)
@@ -190,14 +195,15 @@ private struct MemorySetRow: View {
                     .font(.headline)
                     .foregroundStyle(PalaceStyle.ink)
                 HStack(spacing: 12) {
-                    Label("\(photoCount) 写真", systemImage: "photo")
-                    Label("\(themeCount) テーマ", systemImage: "tag")
+                    Label("\(photoCount) photos", systemImage: "photo")
+                    Label("\(themeCount) themes", systemImage: "tag")
                 }
                 .font(.subheadline)
                 .foregroundStyle(PalaceStyle.mutedInk)
             }
         }
         .padding(12)
+        .contentShape(RoundedRectangle(cornerRadius: 8))
         .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
@@ -224,17 +230,17 @@ struct SetNameEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("名前", text: $name)
+                TextField("Name", text: $name)
             }
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("キャンセル") {
+                    Button("Cancel") {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") {
+                    Button("Save") {
                         onSave(name.trimmingCharacters(in: .whitespacesAndNewlines))
                         dismiss()
                     }

@@ -57,10 +57,10 @@ struct MemoryMapView: View {
 
             VStack(spacing: 10) {
                 VStack(spacing: 3) {
-                    Text("記憶マップ")
+                    Text("Memory Map")
                         .font(.title2.weight(.bold))
                         .foregroundStyle(PalaceStyle.ink)
-                    Text("写真の道しるべをたどる")
+                    Text("Follow your memory path")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(PalaceStyle.mutedInk)
                 }
@@ -84,7 +84,6 @@ struct MemoryMapView: View {
                 MapPreviewCard(
                     photo: animatedSelectedPhoto,
                     memorySet: animatedSelectedPhoto.set,
-                    theme: animatedSelectedPhoto.set?.themes.sorted(by: { $0.createdAt < $1.createdAt }).first,
                     noteCount: animatedSelectedPhoto.items.count
                 )
                 .transition(.asymmetric(
@@ -144,10 +143,10 @@ private struct MapEmptyState: View {
                     .shadow(color: PalaceStyle.ink.opacity(0.16), radius: 16, y: 8)
 
                 VStack(spacing: 8) {
-                    Text("まだ地図に置いた写真がありません")
+                    Text("No Waypoints Added")
                         .font(.title3.weight(.bold))
                         .foregroundStyle(PalaceStyle.ink)
-                    Text("写真に場所を追加すると、思い出すための道しるべがここに並びます。")
+                    Text("Add locations to your photos to see your memory trail on the map.")
                         .font(.subheadline)
                         .foregroundStyle(PalaceStyle.mutedInk)
                         .multilineTextAlignment(.center)
@@ -167,7 +166,7 @@ private struct SetFilterChips: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 FilterChip(
-                    title: "すべて",
+                    title: String(localized: "All"),
                     isSelected: selectedSetId == nil
                 ) {
                     selectedSetId = nil
@@ -246,10 +245,48 @@ private struct PhotoMapPin: View {
 private struct MapPreviewCard: View {
     let photo: MemoryPhoto
     let memorySet: MemorySet?
-    let theme: MemoryTheme?
     let noteCount: Int
 
     var body: some View {
+        ZStack(alignment: .topTrailing) {
+            if let memorySet {
+                NavigationLink {
+                    MemorySetDetailView(memorySet: memorySet)
+                } label: {
+                    cardContent
+                        .padding(.trailing, 56)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Open album \(memorySet.name)"))
+            } else {
+                cardContent
+            }
+
+            if let memorySet {
+                NavigationLink {
+                    MemorySetDetailView(memorySet: memorySet)
+                } label: {
+                    Label("Album", systemImage: "rectangle.stack")
+                        .font(.caption.weight(.bold))
+                        .labelStyle(.iconOnly)
+                        .foregroundStyle(.white)
+                        .frame(width: 48, height: 48)
+                        .background(PalaceStyle.coral, in: RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .padding(12)
+                .accessibilityLabel(String(localized: "Open album details"))
+            }
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.white.opacity(0.6), lineWidth: 1)
+        }
+        .shadow(color: PalaceStyle.ink.opacity(0.16), radius: 14, y: 6)
+    }
+
+    private var cardContent: some View {
         HStack(spacing: 12) {
             MemoryPhotoView(imagePath: photo.imagePath) {
                 RoundedRectangle(cornerRadius: 8)
@@ -265,43 +302,17 @@ private struct MapPreviewCard: View {
                     .font(.headline)
                     .foregroundStyle(PalaceStyle.ink)
                     .lineLimit(1)
-                Text(memorySet?.name ?? "旅のアルバム")
+                Text(memorySet?.name ?? String(localized: "Albums"))
                     .font(.subheadline)
                     .foregroundStyle(PalaceStyle.mutedInk)
                     .lineLimit(1)
-                Label("\(noteCount) メモ", systemImage: "sparkles")
+                Label("\(noteCount) notes", systemImage: "sparkles")
                     .font(.caption)
                     .foregroundStyle(PalaceStyle.sage)
             }
 
             Spacer()
-
-            VStack(spacing: 10) {
-                if let memorySet {
-                    NavigationLink {
-                        MemorySetDetailView(memorySet: memorySet)
-                    } label: {
-                        Image(systemName: "rectangle.stack")
-                    }
-                    .buttonStyle(.bordered)
-                }
-
-                if let theme {
-                    NavigationLink {
-                        PhotoEditorView(photo: photo, theme: theme)
-                    } label: {
-                        Image(systemName: "arrow.up.right")
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-            }
         }
         .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(.white.opacity(0.6), lineWidth: 1)
-        }
-        .shadow(color: PalaceStyle.ink.opacity(0.16), radius: 14, y: 6)
     }
 }
