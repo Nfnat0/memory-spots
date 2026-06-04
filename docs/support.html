@@ -3,27 +3,67 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mind Palace Support</title>
+  <title>Memory Spots Support</title>
+  <meta name="description" content="Support information for Memory Spots.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="page">
-    <nav class="topnav"><a href="index.html">Mind Palace</a><a href="privacy.html">Privacy</a></nav>
-    <section class="section">
-      <h1>Support</h1>
-      <p class="lead">If you need help using Mind Palace, please check the notes below.</p>
+    <nav class="topnav inline">
+      <a class="brand" href="index.html">
+        <img src="assets/memory-spots-icon.png" alt="" width="32" height="32">
+        <span>Memory Spots</span>
+      </a>
+      <div>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/Nfnat0/memory-spots/issues">Contact</a>
+      </div>
+    </nav>
 
-      <h2>I cannot add photos</h2>
-      <p>Open the iPhone Settings app and confirm that Mind Palace has permission to use Photos or Camera. Photos are stored in the app's local storage and are not sent externally.</p>
+    <section class="section intro">
+      <p class="eyebrow">Support</p>
+      <h1>Help for photo routes, themes, map waypoints, and visual notes.</h1>
+      <p class="lead">Memory Spots stores your albums, photos, locations, themes, and notes locally on your device. The notes below cover the most common setup and usage questions.</p>
+    </section>
 
-      <h2>Photos do not appear on the map</h2>
-      <p>Photos without a location are not shown on the map. You can set a location later from a photo in an album.</p>
+    <section class="section help-list">
+      <article>
+        <h2>I cannot add photos</h2>
+        <p>Open the iPhone Settings app and confirm that Memory Spots has permission to use Photos or Camera. You can add photos without location access, but camera captures need location permission if you want them saved with your current place.</p>
+      </article>
 
-      <h2>I cannot see notes for a theme</h2>
-      <p>Notes are separated by theme. On the album detail screen, confirm that the theme you want to view is selected.</p>
+      <article>
+        <h2>Photos do not appear on the Memory Map</h2>
+        <p>The map only shows photos that have a saved latitude and longitude. In an album, tap the map pin button beside a photo, tap the map to place or change its waypoint, then save.</p>
+      </article>
 
-      <h2>Contact</h2>
-      <p>Please post bug reports and feature requests on <a href="https://github.com/Nfnat0/mind-palace/issues">GitHub Issues</a>.</p>
+      <article>
+        <h2>Photo library locations are missing</h2>
+        <p>Some photos do not include location metadata, and some library permission choices limit metadata access. The photo can still be saved, and you can add a location manually later.</p>
+      </article>
+
+      <article>
+        <h2>I cannot see notes for a theme</h2>
+        <p>Notes are separated by theme. Open the album, select the theme chip you want, then open a photo. A photo can have completely different notes for each theme.</p>
+      </article>
+
+      <article>
+        <h2>How review works</h2>
+        <p>Open Review Notes from an album and theme. The app shows each photo in route order; tap a placed note to reveal its answer. The current MVP keeps review simple and does not use a scheduling algorithm.</p>
+      </article>
+
+      <article>
+        <h2>Data deletion</h2>
+        <p>You can delete albums, photos, themes, and notes in the app. Deleting the app from the device also deletes the app data stored on that device.</p>
+      </article>
+    </section>
+
+    <section class="section split">
+      <div>
+        <p class="eyebrow">Contact</p>
+        <h2>Bug reports and feature requests</h2>
+      </div>
+      <p>Please use <a href="https://github.com/Nfnat0/memory-spots/issues">GitHub Issues</a>. Include your iOS version, device model, and the steps that led to the problem when possible.</p>
     </section>
   </main>
 </body>
