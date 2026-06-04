@@ -40,7 +40,7 @@ struct TutorialView: View {
             }
 
             VStack(spacing: 12) {
-                Text("Welcome to Mind Palace")
+                Text("Welcome to Memory Spots")
                     .font(.title.weight(.bold))
                     .foregroundStyle(PalaceStyle.ink)
                     .multilineTextAlignment(.center)

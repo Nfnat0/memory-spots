@@ -4,7 +4,7 @@ Guidance for coding agents working in this repository.
 
 ## Project Goal
 
-Mind Palace is an iOS MVP for practicing the method of loci with place photos. Keep the app focused on:
+Memory Spots is an iOS MVP for practicing the method of loci with place photos. Keep the app focused on:
 
 - Memory sets made from ordered place photos.
 - Themes that switch note content on the same photo route.

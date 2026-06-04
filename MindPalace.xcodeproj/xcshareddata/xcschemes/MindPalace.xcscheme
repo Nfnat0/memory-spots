@@ -50,6 +50,17 @@
                ReferencedContainer = "container:MindPalace.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "72BDF6E057B1BE354EAF0649"
+               BuildableName = "MindPalaceUITests.xctest"
+               BlueprintName = "MindPalaceUITests"
+               ReferencedContainer = "container:MindPalace.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

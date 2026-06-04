@@ -11,6 +11,9 @@ struct LocationEditorView: View {
 
     @State private var cameraPosition: MapCameraPosition
     @State private var draftCoordinate: CLLocationCoordinate2D?
+    @StateObject private var locationProvider = LocationProvider()
+    @State private var didSetInitialUserLocation = false
+    @State private var isCenteringOnUserLocation = false
 
     init(photo: MemoryPhoto) {
         self.photo = photo
@@ -39,13 +42,20 @@ struct LocationEditorView: View {
             VStack(spacing: 0) {
                 MapReader { proxy in
                     Map(position: $cameraPosition) {
+                        UserAnnotation()
+
                         if let draftCoordinate {
                             Marker("This Place", coordinate: draftCoordinate)
                         }
                     }
                     .mapControls {
                         MapCompass()
-                        MapUserLocationButton()
+                    }
+                    .overlay(alignment: .trailing) {
+                        CurrentLocationMapButton {
+                            centerOnUserLocation()
+                        }
+                        .padding(.trailing, 14)
                     }
                     .gesture(
                         SpatialTapGesture()
@@ -74,6 +84,16 @@ struct LocationEditorView: View {
                 .padding()
                 .background(.regularMaterial)
             }
+            .onAppear {
+                locationProvider.requestLocationIfPossible()
+                updateInitialCameraIfNeeded()
+            }
+            .onReceive(locationProvider.$latestCoordinate) { _ in
+                updateInitialCameraIfNeeded()
+                if isCenteringOnUserLocation {
+                    centerOnUserLocation()
+                }
+            }
             .navigationTitle("Place Location")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -98,5 +118,55 @@ struct LocationEditorView: View {
                 }
             }
         }
+    }
+
+    private func updateInitialCameraIfNeeded() {
+        guard draftCoordinate == nil, !didSetInitialUserLocation, let coordinate = locationProvider.latestCoordinate else {
+            return
+        }
+
+        cameraPosition = .region(region(centeredAt: coordinate))
+        didSetInitialUserLocation = true
+    }
+
+    private func centerOnUserLocation() {
+        locationProvider.requestLocationIfPossible()
+        guard let coordinate = locationProvider.latestCoordinate else {
+            isCenteringOnUserLocation = true
+            return
+        }
+
+        isCenteringOnUserLocation = false
+        didSetInitialUserLocation = true
+        withAnimation {
+            cameraPosition = .region(region(centeredAt: coordinate))
+        }
+    }
+
+    private func region(centeredAt coordinate: CLLocationCoordinate2D) -> MKCoordinateRegion {
+        MKCoordinateRegion(
+            center: coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        )
+    }
+}
+
+private struct CurrentLocationMapButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "location.fill")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(PalaceStyle.ink)
+                .frame(width: 42, height: 42)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white.opacity(0.58), lineWidth: 1)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(String(localized: "Current Location"))
     }
 }

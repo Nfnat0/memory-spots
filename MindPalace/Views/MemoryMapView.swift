@@ -4,6 +4,8 @@ import SwiftData
 import SwiftUI
 
 struct MemoryMapView: View {
+    @Environment(\.modelContext) private var modelContext
+
     @Query(sort: \MemorySet.updatedAt, order: .reverse) private var memorySets: [MemorySet]
     @Query private var photos: [MemoryPhoto]
     @Query private var themes: [MemoryTheme]
@@ -11,12 +13,16 @@ struct MemoryMapView: View {
 
     @State private var selectedSetId: UUID?
     @State private var selectedThemeId: UUID?
-    @State private var albumSearchText = ""
-    @State private var themeSearchText = ""
-    @State private var isFilterSheetPresented = false
+    @State private var filterSearchText = ""
+    @State private var isSearchActive = false
+    @State private var isAddingSet = false
     @State private var selectedPhotoId: UUID?
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var animatedSelectedPhoto: MemoryPhoto? = nil
+    @StateObject private var locationProvider = LocationProvider()
+    @State private var didSetInitialCamera = false
+    @State private var isCenteringOnUserLocation = false
+    @FocusState private var isSearchFocused: Bool
 
     private var visiblePhotos: [MemoryPhoto] {
         var filteredPhotos: [MemoryPhoto]
@@ -57,6 +63,8 @@ struct MemoryMapView: View {
                 MapEmptyState()
             } else {
                 Map(position: $cameraPosition, selection: $selectedPhotoId) {
+                    UserAnnotation()
+
                     ForEach(visiblePhotos) { photo in
                         Annotation(photo.title, coordinate: coordinate(for: photo)) {
                             PhotoMapPin(
@@ -69,61 +77,53 @@ struct MemoryMapView: View {
                 }
                 .mapControls {
                     MapCompass()
-                    MapUserLocationButton()
                 }
                 .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
                 .ignoresSafeArea(edges: .bottom)
             }
 
-            VStack(spacing: 10) {
-                Text("Memory Map")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(PalaceStyle.ink)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(.white.opacity(0.58), lineWidth: 1)
-                    }
-
-                MapFilterBar(
-                    selectedSet: selectedSet,
-                    selectedTheme: selectedTheme,
-                    showFilters: {
-                        isFilterSheetPresented = true
-                    },
-                    clearSet: {
-                        selectedSetId = nil
-                        selectedThemeId = nil
-                        albumSearchText = ""
-                        themeSearchText = ""
-                    },
-                    clearTheme: {
-                        selectedThemeId = nil
-                        themeSearchText = ""
-                    }
+            VStack(spacing: 8) {
+                MapSearchBar(
+                    title: searchBarTitle,
+                    searchText: $filterSearchText,
+                    isSearchActive: $isSearchActive,
+                    isSearchFocused: $isSearchFocused,
+                    isFiltered: selectedSet != nil || selectedTheme != nil,
+                    beginSearch: beginSearch,
+                    clearFilters: clearFilters,
+                    centerOnUserLocation: centerOnUserLocation
                 )
+
+                if isSearchActive && (!albumMatches.isEmpty || !themeMatches.isEmpty) {
+                    FilterResultList {
+                        ForEach(albumMatches) { memorySet in
+                            FilterResultButton(title: memorySet.name, subtitle: String(localized: "\(memorySet.photos.count) photos")) {
+                                selectedSetId = memorySet.id
+                                selectedThemeId = nil
+                                endSearch()
+                            }
+                        }
+
+                        ForEach(themeMatches) { theme in
+                            FilterResultButton(title: theme.name, subtitle: theme.set?.name ?? String(localized: "Album")) {
+                                selectedThemeId = theme.id
+                                selectedSetId = theme.setId
+                                endSearch()
+                            }
+                        }
+                    }
+                    .frame(maxWidth: 406)
+                    .padding(.horizontal, 20)
+                }
             }
             .padding(.top, 8)
-        }
-        .sheet(isPresented: $isFilterSheetPresented) {
-            FilterSelectionSheet(
-                memorySets: memorySets,
-                themes: themes,
-                selectedSetId: $selectedSetId,
-                selectedThemeId: $selectedThemeId,
-                albumSearchText: $albumSearchText,
-                themeSearchText: $themeSearchText
-            )
-            .presentationDetents([.medium, .large])
-            .presentationDragIndicator(.visible)
         }
         .safeAreaInset(edge: .bottom) {
             if let animatedSelectedPhoto {
                 MapPreviewCard(
                     photo: animatedSelectedPhoto,
                     memorySet: animatedSelectedPhoto.set,
+                    theme: editorTheme(for: animatedSelectedPhoto),
                     noteCount: noteCount(for: animatedSelectedPhoto)
                 )
                 .transition(.asymmetric(
@@ -133,7 +133,37 @@ struct MemoryMapView: View {
                 .padding()
             }
         }
-        .onAppear(perform: updateCameraIfNeeded)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    isAddingSet = true
+                } label: {
+                    Label("Add Album", systemImage: "plus")
+                }
+                .accessibilityIdentifier("memoryMapAddAlbumButton")
+            }
+        }
+        .sheet(isPresented: $isAddingSet) {
+            SetNameEditor(title: String(localized: "Create Album"), initialName: "") { name in
+                createSet(named: name)
+            }
+            .presentationDetents([.medium])
+        }
+        .onAppear {
+            if !isLocationDisabledForUITests {
+                locationProvider.requestLocationIfPossible()
+            }
+            updateInitialCameraIfNeeded()
+        }
+        .onReceive(locationProvider.$latestCoordinate) { _ in
+            guard !isLocationDisabledForUITests else {
+                return
+            }
+            updateInitialCameraIfNeeded()
+            if isCenteringOnUserLocation {
+                centerOnUserLocation()
+            }
+        }
         .onChange(of: selectedSetId) {
             if let selectedTheme, selectedTheme.setId != selectedSetId {
                 selectedThemeId = nil
@@ -142,7 +172,7 @@ struct MemoryMapView: View {
             withAnimation {
                 animatedSelectedPhoto = nil
             }
-            updateCameraIfNeeded()
+            updateCameraForVisiblePhotosIfNeeded()
         }
         .onChange(of: selectedPhotoId) { _, newValue in
             if newValue != nil {
@@ -162,16 +192,115 @@ struct MemoryMapView: View {
         return photo.items.count
     }
 
-    private func updateCameraIfNeeded() {
+    private var albumMatches: [MemorySet] {
+        let query = filterSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return [] }
+        return Array(memorySets.filter { $0.name.localizedStandardContains(query) }.prefix(6))
+    }
+
+    private var themeMatches: [MemoryTheme] {
+        let query = filterSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return [] }
+        return Array(themes.filter { $0.name.localizedStandardContains(query) }.prefix(6))
+    }
+
+    private var searchBarTitle: String {
+        if let selectedSet, let selectedTheme {
+            return "\(selectedSet.name) / \(selectedTheme.name)"
+        }
+
+        if let selectedSet {
+            return selectedSet.name
+        }
+
+        if let selectedTheme {
+            return selectedTheme.name
+        }
+
+        return String(localized: "Search albums or tags")
+    }
+
+    private var isLocationDisabledForUITests: Bool {
+        ProcessInfo.processInfo.arguments.contains("-UITestingDisableLocation")
+    }
+
+    private func beginSearch() {
+        isSearchActive = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            isSearchFocused = true
+        }
+    }
+
+    private func endSearch() {
+        filterSearchText = ""
+        isSearchFocused = false
+        isSearchActive = false
+    }
+
+    private func clearFilters() {
+        selectedSetId = nil
+        selectedThemeId = nil
+        endSearch()
+    }
+
+    private func editorTheme(for photo: MemoryPhoto) -> MemoryTheme? {
+        if let selectedTheme, selectedTheme.setId == photo.setId {
+            return selectedTheme
+        }
+
+        return themes
+            .filter { $0.setId == photo.setId }
+            .sorted { $0.createdAt < $1.createdAt }
+            .first
+    }
+
+    private func createSet(named name: String) {
+        let memorySet = MemorySet(name: name)
+        let theme = MemoryTheme(setId: memorySet.id, name: String(localized: "Default"))
+        theme.set = memorySet
+        modelContext.insert(memorySet)
+        modelContext.insert(theme)
+        try? modelContext.save()
+    }
+
+    private func updateInitialCameraIfNeeded() {
+        guard !didSetInitialCamera else {
+            return
+        }
+
+        if let coordinate = locationProvider.latestCoordinate {
+            cameraPosition = .region(region(centeredAt: coordinate, latitudeDelta: 0.01, longitudeDelta: 0.01))
+            didSetInitialCamera = true
+            return
+        }
+
+        updateCameraForVisiblePhotosIfNeeded()
+    }
+
+    private func updateCameraForVisiblePhotosIfNeeded() {
         guard let firstPhoto = visiblePhotos.first else {
             return
         }
         cameraPosition = .region(
-            MKCoordinateRegion(
-                center: coordinate(for: firstPhoto),
-                span: MKCoordinateSpan(latitudeDelta: 0.006, longitudeDelta: 0.006)
-            )
+            region(centeredAt: coordinate(for: firstPhoto), latitudeDelta: 0.006, longitudeDelta: 0.006)
         )
+    }
+
+    private func centerOnUserLocation() {
+        guard !isLocationDisabledForUITests else {
+            return
+        }
+
+        locationProvider.requestLocationIfPossible()
+        guard let coordinate = locationProvider.latestCoordinate else {
+            isCenteringOnUserLocation = true
+            return
+        }
+
+        isCenteringOnUserLocation = false
+        withAnimation {
+            cameraPosition = .region(region(centeredAt: coordinate, latitudeDelta: 0.01, longitudeDelta: 0.01))
+        }
     }
 
     private func coordinate(for photo: MemoryPhoto) -> CLLocationCoordinate2D {
@@ -179,6 +308,34 @@ struct MemoryMapView: View {
             latitude: photo.latitude ?? 0,
             longitude: photo.longitude ?? 0
         )
+    }
+
+    private func region(centeredAt coordinate: CLLocationCoordinate2D, latitudeDelta: CLLocationDegrees, longitudeDelta: CLLocationDegrees) -> MKCoordinateRegion {
+        MKCoordinateRegion(
+            center: coordinate,
+            span: MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
+        )
+    }
+}
+
+private struct CurrentLocationMapButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "location.fill")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(PalaceStyle.ink)
+                .frame(width: 42, height: 42)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white.opacity(0.58), lineWidth: 1)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(String(localized: "Current Location"))
+        .accessibilityIdentifier("memoryMapCurrentLocationButton")
     }
 }
 
@@ -208,260 +365,74 @@ private struct MapEmptyState: View {
     }
 }
 
-private struct MapFilterBar: View {
-    let selectedSet: MemorySet?
-    let selectedTheme: MemoryTheme?
-    let showFilters: () -> Void
-    let clearSet: () -> Void
-    let clearTheme: () -> Void
+private struct MapSearchBar: View {
+    let title: String
+    @Binding var searchText: String
+    @Binding var isSearchActive: Bool
+    @FocusState.Binding var isSearchFocused: Bool
+    let isFiltered: Bool
+    let beginSearch: () -> Void
+    let clearFilters: () -> Void
+    let centerOnUserLocation: () -> Void
 
     var body: some View {
         HStack(spacing: 8) {
-            Button(action: showFilters) {
-                Image(systemName: "slider.horizontal.3")
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(PalaceStyle.ink)
-                    .frame(width: 40, height: 38)
-                    .background(.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 8))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(PalaceStyle.paperDeep.opacity(0.55), lineWidth: 1)
+            HStack(spacing: 9) {
+                Image(systemName: "magnifyingglass")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(PalaceStyle.mutedInk)
+
+                if isSearchActive {
+                    TextField("Search albums or tags", text: $searchText)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .focused($isSearchFocused)
+                        .submitLabel(.search)
+                        .accessibilityIdentifier("memoryMapUnifiedSearchField")
+                } else {
+                    Button(action: beginSearch) {
+                        Text(title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(isFiltered ? PalaceStyle.ink : PalaceStyle.mutedInk)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "Search albums or tags"))
+                    .accessibilityIdentifier("memoryMapSearchBar")
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(String(localized: "Filters"))
-
-            HStack(spacing: 8) {
-                SelectedFilterChip(
-                    title: selectedSet?.name ?? String(localized: "Albums"),
-                    systemImage: "rectangle.stack",
-                    isActive: selectedSet != nil,
-                    action: selectedSet == nil ? showFilters : clearSet
-                )
-
-                SelectedFilterChip(
-                    title: selectedTheme?.name ?? String(localized: "Themes"),
-                    systemImage: "tag",
-                    isActive: selectedTheme != nil,
-                    action: selectedTheme == nil ? showFilters : clearTheme
-                )
+            .padding(.horizontal, 12)
+            .frame(height: 44)
+            .background(.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 8))
+            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .onTapGesture {
+                if !isSearchActive {
+                    beginSearch()
+                }
             }
+
+            if isFiltered {
+                Button(action: clearFilters) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(PalaceStyle.mutedInk)
+                        .frame(width: 36, height: 44)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Clear filters"))
+            }
+
+            CurrentLocationMapButton(action: centerOnUserLocation)
         }
         .padding(8)
-        .frame(maxWidth: 360)
+        .frame(maxWidth: 430)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(.white.opacity(0.58), lineWidth: 1)
         }
         .padding(.horizontal, 12)
-    }
-}
-
-private enum FilterSearchFocusField: Hashable {
-    case album
-    case theme
-}
-
-private struct FilterSelectionSheet: View {
-    let memorySets: [MemorySet]
-    let themes: [MemoryTheme]
-    @Binding var selectedSetId: UUID?
-    @Binding var selectedThemeId: UUID?
-    @Binding var albumSearchText: String
-    @Binding var themeSearchText: String
-
-    @Environment(\.dismiss) private var dismiss
-    @FocusState private var focusedField: FilterSearchFocusField?
-
-    private var selectedSet: MemorySet? {
-        guard let selectedSetId else { return nil }
-        return memorySets.first { $0.id == selectedSetId }
-    }
-
-    private var selectedTheme: MemoryTheme? {
-        guard let selectedThemeId else { return nil }
-        return themes.first { $0.id == selectedThemeId }
-    }
-
-    private var albumMatches: [MemorySet] {
-        let query = albumSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return [] }
-        return Array(memorySets.filter { $0.name.localizedStandardContains(query) }.prefix(6))
-    }
-
-    private var themeMatches: [MemoryTheme] {
-        let query = themeSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return [] }
-        return Array(
-            themes
-                .filter { theme in
-                    (selectedSetId == nil || theme.setId == selectedSetId)
-                        && theme.name.localizedStandardContains(query)
-                }
-                .prefix(6)
-        )
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 8) {
-                        SelectedFilterChip(
-                            title: selectedSet?.name ?? String(localized: "Albums"),
-                            systemImage: "rectangle.stack",
-                            isActive: selectedSet != nil
-                        ) {
-                            focusedField = nil
-                            selectedSetId = nil
-                            selectedThemeId = nil
-                            albumSearchText = ""
-                            themeSearchText = ""
-                        }
-
-                        SelectedFilterChip(
-                            title: selectedTheme?.name ?? String(localized: "Themes"),
-                            systemImage: "tag",
-                            isActive: selectedTheme != nil
-                        ) {
-                            focusedField = nil
-                            selectedThemeId = nil
-                            themeSearchText = ""
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        FilterSearchField(
-                            title: String(localized: "Search albums"),
-                            text: $albumSearchText,
-                            systemImage: "magnifyingglass",
-                            focusField: .album,
-                            focusedField: $focusedField
-                        )
-
-                        if !albumMatches.isEmpty {
-                            FilterResultList {
-                                ForEach(albumMatches) { memorySet in
-                                    FilterResultButton(title: memorySet.name, subtitle: String(localized: "\(memorySet.photos.count) photos")) {
-                                        focusedField = nil
-                                        selectedSetId = memorySet.id
-                                        selectedThemeId = nil
-                                        albumSearchText = ""
-                                        themeSearchText = ""
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        FilterSearchField(
-                            title: String(localized: "Search themes"),
-                            text: $themeSearchText,
-                            systemImage: "tag",
-                            focusField: .theme,
-                            focusedField: $focusedField
-                        )
-
-                        if !themeMatches.isEmpty {
-                            FilterResultList {
-                                ForEach(themeMatches) { theme in
-                                    FilterResultButton(title: theme.name, subtitle: theme.set?.name ?? String(localized: "Album")) {
-                                        focusedField = nil
-                                        selectedThemeId = theme.id
-                                        if selectedSetId == nil {
-                                            selectedSetId = theme.setId
-                                        }
-                                        themeSearchText = ""
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .padding(16)
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .navigationTitle(String(localized: "Memory Map"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        focusedField = nil
-                        dismiss()
-                    }
-                }
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        focusedField = nil
-                    }
-                }
-            }
-        }
-    }
-}
-
-private struct SelectedFilterChip: View {
-    let title: String
-    let systemImage: String
-    let isActive: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.caption.weight(.semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 7)
-                .frame(maxWidth: .infinity)
-                .background(isActive ? PalaceStyle.coral : .white.opacity(0.82), in: Capsule())
-                .foregroundStyle(isActive ? .white : PalaceStyle.ink)
-                .overlay {
-                    Capsule()
-                        .stroke(isActive ? .clear : PalaceStyle.paperDeep.opacity(0.5), lineWidth: 1)
-                }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct FilterSearchField: View {
-    let title: String
-    @Binding var text: String
-    let systemImage: String
-    let focusField: FilterSearchFocusField
-    @FocusState.Binding var focusedField: FilterSearchFocusField?
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: systemImage)
-                .foregroundStyle(PalaceStyle.mutedInk)
-            TextField(title, text: $text)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .focused($focusedField, equals: focusField)
-                .submitLabel(.done)
-                .onSubmit {
-                    focusedField = nil
-                }
-            if !text.isEmpty {
-                Button {
-                    text = ""
-                    focusedField = focusField
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(PalaceStyle.mutedInk)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .font(.subheadline)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -546,19 +517,20 @@ private struct PhotoMapPin: View {
 private struct MapPreviewCard: View {
     let photo: MemoryPhoto
     let memorySet: MemorySet?
+    let theme: MemoryTheme?
     let noteCount: Int
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            if let memorySet {
+            if let theme {
                 NavigationLink {
-                    MemorySetDetailView(memorySet: memorySet)
+                    PhotoEditorView(photo: photo, theme: theme)
                 } label: {
                     cardContent
                         .padding(.trailing, 56)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Open album \(memorySet.name)"))
+                .accessibilityLabel(String(localized: "Open photo \(photo.title)"))
             } else {
                 cardContent
             }

@@ -8,13 +8,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Mind Palace"
+            "value" : "Memory Spots"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Mind Palace"
+            "value" : "Memory Spots"
           }
         }
       }
@@ -26,13 +26,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "MindPalace"
+            "value" : "Memory Spots"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "MindPalace"
+            "value" : "Memory Spots"
           }
         }
       }

@@ -32,12 +32,20 @@
 		D6C7B267F3A8A19F8097776F /* MemoryPhotoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57123AD136F53B967BA7620 /* MemoryPhotoView.swift */; };
 		D9089C8E9F258B4E547ECF4F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7254FA0787EA207C87E000 /* HomeView.swift */; };
 		D9BF59CC9E847A45D6CB238E /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3B3C584B18F912DC971A8EFC /* InfoPlist.xcstrings */; };
+		DE88AEDAF7D1E1E98B06C234 /* MemoryMapUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15384D8B8F9257A96D4F0634 /* MemoryMapUITests.swift */; };
 		F4D534CA8584BD76E5D92EB6 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FF2B380FF8A8CA87B83714 /* ReviewView.swift */; };
 		FB26FA7520718936AD0937AF /* LocationEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */; };
 		FB99A743C8F5306C2959BA0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4134EA970D56F0A9B12A3611 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		66F5F267A2383CE23666E5C2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3D53D31276917A441A86FF9E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1B831FAF631E4F0266EF59B7;
+			remoteInfo = MindPalace;
+		};
 		929E62CFBD47FCE95F773D55 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3D53D31276917A441A86FF9E /* Project object */;
@@ -51,12 +59,14 @@
 		03D6FBB682B61C4983AF33C3 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
 		10BC53B282C07FB5E84AD94C /* local_park.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = local_park.jpeg; sourceTree = "<group>"; };
 		14F7D7FB9D12E1C165784453 /* GeometryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtils.swift; sourceTree = "<group>"; };
+		15384D8B8F9257A96D4F0634 /* MemoryMapUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapUITests.swift; sourceTree = "<group>"; };
 		1C7254FA0787EA207C87E000 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20328AB420EA87A3F11288DB /* ImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStore.swift; sourceTree = "<group>"; };
 		24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataService.swift; sourceTree = "<group>"; };
 		24C09D4E011CBDEE455BF79F /* desk_setup.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = desk_setup.jpeg; sourceTree = "<group>"; };
 		29A661D21CEBD2F9D27F8127 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		2FA9995BD1A199571CCB3089 /* MindPalaceUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MindPalaceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3087B2519E3359C15F8D94D7 /* LocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationProvider.swift; sourceTree = "<group>"; };
 		33EBACBC955120915D421E52 /* GeometryUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtilsTests.swift; sourceTree = "<group>"; };
 		350DC7BF6AA07E61E0954225 /* MemoryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryModels.swift; sourceTree = "<group>"; };
@@ -87,6 +97,7 @@
 			children = (
 				C422B1A13F5C1EBF9498120B /* MindPalace */,
 				235D29297CD18E820C415CD7 /* MindPalaceTests */,
+				C8857BB4DF4A1C001F5D4071 /* MindPalaceUITests */,
 				D4D576095A3470779987EB97 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -173,11 +184,20 @@
 			path = MindPalace;
 			sourceTree = "<group>";
 		};
+		C8857BB4DF4A1C001F5D4071 /* MindPalaceUITests */ = {
+			isa = PBXGroup;
+			children = (
+				15384D8B8F9257A96D4F0634 /* MemoryMapUITests.swift */,
+			);
+			path = MindPalaceUITests;
+			sourceTree = "<group>";
+		};
 		D4D576095A3470779987EB97 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				1F520C499840A3BC6065F1C5 /* MindPalace.app */,
 				FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */,
+				2FA9995BD1A199571CCB3089 /* MindPalaceUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -230,6 +250,24 @@
 			productReference = FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		72BDF6E057B1BE354EAF0649 /* MindPalaceUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB50D588DBC6ACAC318980FE /* Build configuration list for PBXNativeTarget "MindPalaceUITests" */;
+			buildPhases = (
+				99F08CC509D250E271F29A54 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F35089009CAB4BCF5F187C17 /* PBXTargetDependency */,
+			);
+			name = MindPalaceUITests;
+			packageProductDependencies = (
+			);
+			productName = MindPalaceUITests;
+			productReference = 2FA9995BD1A199571CCB3089 /* MindPalaceUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -244,6 +282,10 @@
 					};
 					2696D9F5F4593DF14E779D87 = {
 						DevelopmentTeam = 3Z2GBKFGF5;
+					};
+					72BDF6E057B1BE354EAF0649 = {
+						DevelopmentTeam = 3Z2GBKFGF5;
+						TestTargetID = 1B831FAF631E4F0266EF59B7;
 					};
 				};
 			};
@@ -264,6 +306,7 @@
 			targets = (
 				1B831FAF631E4F0266EF59B7 /* MindPalace */,
 				2696D9F5F4593DF14E779D87 /* MindPalaceTests */,
+				72BDF6E057B1BE354EAF0649 /* MindPalaceUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -321,9 +364,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		99F08CC509D250E271F29A54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE88AEDAF7D1E1E98B06C234 /* MemoryMapUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		F35089009CAB4BCF5F187C17 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1B831FAF631E4F0266EF59B7 /* MindPalace */;
+			targetProxy = 66F5F267A2383CE23666E5C2 /* PBXContainerItemProxy */;
+		};
 		F5F6B5B07637BF1BC162D705 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 1B831FAF631E4F0266EF59B7 /* MindPalace */;
@@ -412,7 +468,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspotsTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
@@ -430,7 +486,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalaceTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspotsTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MindPalace.app/MindPalace";
@@ -448,7 +504,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalace;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspots;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -527,9 +583,45 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.MindPalace;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspots;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA97DB1BDE369ACF00D392C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspotsUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MindPalace;
+			};
+			name = Release;
+		};
+		CF10C2E71D1C07AC7731F882 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspotsUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MindPalace;
 			};
 			name = Debug;
 		};
@@ -541,6 +633,15 @@
 			buildConfigurations = (
 				8DA9BE44A5B741B12A05CD96 /* Debug */,
 				6D0C90E776BA4C96D9489CE4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AB50D588DBC6ACAC318980FE /* Build configuration list for PBXNativeTarget "MindPalaceUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF10C2E71D1C07AC7731F882 /* Debug */,
+				AA97DB1BDE369ACF00D392C4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -1,6 +1,6 @@
 name: MindPalace
 options:
-  bundleIdPrefix: com.nf
+  bundleIdPrefix: com.nfnat0
   deploymentTarget:
     iOS: "17.0"
   xcodeVersion: "26.5"
@@ -25,10 +25,11 @@ targets:
     info:
       path: MindPalace/Info.plist
       properties:
-        CFBundleDisplayName: Mind Palace
-        NSCameraUsageDescription: Mind Palace uses the camera to add place photos to memory sets.
-        NSLocationWhenInUseUsageDescription: Mind Palace can attach your current location to newly captured place photos.
-        NSPhotoLibraryUsageDescription: Mind Palace can read photo location metadata when you add place photos from your library.
+        CFBundleDisplayName: Memory Spots
+        CFBundleName: Memory Spots
+        NSCameraUsageDescription: Memory Spots uses the camera to add place photos to memory sets.
+        NSLocationWhenInUseUsageDescription: Memory Spots can attach your current location to newly captured place photos.
+        NSPhotoLibraryUsageDescription: Memory Spots can read photo location metadata when you add place photos from your library.
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -39,6 +40,9 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nfnat0.memoryspots
   MindPalaceTests:
     type: bundle.unit-test
     platform: iOS
@@ -50,6 +54,20 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.nfnat0.memoryspotsTests
+  MindPalaceUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - MindPalaceUITests
+    dependencies:
+      - target: MindPalace
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.nfnat0.memoryspotsUITests
+        TEST_TARGET_NAME: MindPalace
 schemes:
   MindPalace:
     build:
@@ -58,3 +76,4 @@ schemes:
     test:
       targets:
         - MindPalaceTests
+        - MindPalaceUITests

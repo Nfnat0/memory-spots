@@ -1,3 +1,4 @@
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -31,12 +32,16 @@ struct HomeView: View {
         .task {
             SeedDataService.seedAWSExamSetIfNeeded(modelContext: modelContext)
         }
-        .sheet(isPresented: Binding(get: { !hasCompletedTutorial }, set: { _ in })) {
+        .sheet(isPresented: Binding(get: { !hasCompletedTutorial && !isSkippingTutorialForUITests }, set: { _ in })) {
             TutorialView {
                 hasCompletedTutorial = true
             }
             .interactiveDismissDisabled()
         }
+    }
+
+    private var isSkippingTutorialForUITests: Bool {
+        ProcessInfo.processInfo.arguments.contains("-UITestingSkipTutorial")
     }
 
     private var setList: some View {
