@@ -106,7 +106,7 @@ a {
 h1 {
   max-width: 780px;
   margin: 0;
-  font-size: clamp(2.65rem, 8vw, 5.9rem);
+  font-size: clamp(2.45rem, 7vw, 5.4rem);
   line-height: 0.98;
   letter-spacing: 0;
 }
@@ -256,12 +256,21 @@ article p,
 
 @media (max-width: 760px) {
   .hero {
-    min-height: 76vh;
+    min-height: auto;
     background-position: 30% center;
+  }
+
+  .hero-copy {
+    padding: 28px 0 44px;
   }
 
   .topnav {
     align-items: flex-start;
+    gap: 12px;
+  }
+
+  .topnav div {
+    gap: 12px;
   }
 
   .grid,
@@ -271,6 +280,11 @@ article p,
   }
 
   h1 {
-    font-size: clamp(2.35rem, 13vw, 4rem);
+    font-size: clamp(2.05rem, 10.5vw, 3.35rem);
+    line-height: 1.02;
+  }
+
+  .intro h1 {
+    font-size: clamp(1.95rem, 9.5vw, 3rem);
   }
 }
