@@ -68,8 +68,6 @@ struct LocationEditorView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(photo.title)
-                        .font(.headline)
                     if let draftCoordinate {
                         Text("Latitude \(draftCoordinate.latitude.formatted(.number.precision(.fractionLength(5)))) / Longitude \(draftCoordinate.longitude.formatted(.number.precision(.fractionLength(5))))")
                             .font(.subheadline)

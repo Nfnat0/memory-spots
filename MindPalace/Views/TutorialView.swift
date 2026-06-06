@@ -86,7 +86,6 @@ struct TutorialView: View {
             // Image Container with aspect fit and coordinates
             GeometryReader { proxy in
                 let containerSize = proxy.size
-                // Load bundled my_room image
                 let image = tutorialImage
                 let imgFrame = aspectFitFrame(imageSize: image.size, containerSize: containerSize)
 
@@ -214,10 +213,14 @@ struct TutorialView: View {
     }
 
     private var tutorialImage: UIImage {
-        if let image = UIImage(named: "my_room") {
+        let resourceName = "240C63AE-B4CF-4BE2-90BE-D450878B809F"
+        if let image = UIImage(named: resourceName) {
             return image
         }
-        if let url = Bundle.main.url(forResource: "my_room", withExtension: "jpeg") {
+        if let url = Bundle.main.url(forResource: resourceName, withExtension: "png", subdirectory: "SeedImages") {
+            return UIImage(contentsOfFile: url.path(percentEncoded: false)) ?? UIImage()
+        }
+        if let url = Bundle.main.url(forResource: resourceName, withExtension: "png") {
             return UIImage(contentsOfFile: url.path(percentEncoded: false)) ?? UIImage()
         }
         return UIImage()

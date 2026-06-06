@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var isAddingSet = false
     @State private var albumSearchText = ""
     @State private var renamingSet: MemorySet?
+    @State private var deletingSet: MemorySet?
     @State private var openingSet: MemorySet?
     @AppStorage("hasCompletedTutorial") private var hasCompletedTutorial = false
 
@@ -81,20 +82,24 @@ struct HomeView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            Button {
+                                renamingSet = memorySet
+                            } label: {
+                                Label("Rename", systemImage: "pencil")
+                            }
+                            .tint(PalaceStyle.sage)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                deletingSet = memorySet
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                         .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                        .swipeActions(edge: .leading) {
-                            Button("Rename") {
-                                renamingSet = memorySet
-                            }
-                            .tint(.blue)
-                        }
-                        .swipeActions(edge: .trailing) {
-                            Button("Delete", role: .destructive) {
-                                delete(memorySet)
-                            }
-                        }
                     }
                 }
             }
@@ -123,7 +128,7 @@ struct HomeView: View {
                 SetNameEditor(title: String(localized: "Create Album"), initialName: "") { name in
                     createSet(named: name)
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
             }
             .sheet(item: $renamingSet) { memorySet in
                 SetNameEditor(title: String(localized: "Rename"), initialName: memorySet.name) { name in
@@ -131,7 +136,27 @@ struct HomeView: View {
                     memorySet.updatedAt = Date()
                     try? modelContext.save()
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
+            }
+            .confirmationDialog(
+                "Delete Album?",
+                isPresented: Binding(
+                    get: { deletingSet != nil },
+                    set: { if !$0 { deletingSet = nil } }
+                ),
+                titleVisibility: .visible
+            ) {
+                if let deletingSet {
+                    Button("Delete Album", role: .destructive) {
+                        delete(deletingSet)
+                        self.deletingSet = nil
+                    }
+                }
+                Button("Cancel", role: .cancel) {
+                    deletingSet = nil
+                }
+            } message: {
+                Text("This will delete the album, its themes, photos, and notes.")
             }
         }
     }

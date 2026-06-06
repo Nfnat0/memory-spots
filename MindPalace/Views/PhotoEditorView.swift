@@ -8,137 +8,120 @@ struct PhotoEditorView: View {
 
     let photo: MemoryPhoto
     let theme: MemoryTheme
+    let photos: [MemoryPhoto]
 
     @Query private var items: [MemoryItem]
+    @Query private var themes: [MemoryTheme]
 
     @State private var editingItem: MemoryItem?
-    @State private var draggingItemId: UUID?
-    @State private var dragStart = CGPoint.zero
+    @State private var selectedPageIndex: Int
+    @State private var selectedThemeId: UUID
     @State private var isImagePickerPresented = false
+    @State private var editingLocationPhoto: MemoryPhoto?
     @State private var selectedImageItem: PhotosPickerItem?
 
-    // Zoom & Pan states
-    @State private var zoomScale: CGFloat = 1.0
-    @State private var lastZoomScale: CGFloat = 1.0
-    @State private var panOffset: CGSize = .zero
-    @State private var lastPanOffset: CGSize = .zero
-
-    private var magnification: some Gesture {
-        MagnificationGesture()
-            .onChanged { val in
-                let newScale = lastZoomScale * val
-                zoomScale = min(max(newScale, 1.0), 4.0)
-            }
-            .onEnded { val in
-                lastZoomScale = zoomScale
-            }
+    init(photo: MemoryPhoto, theme: MemoryTheme, photos: [MemoryPhoto]? = nil) {
+        self.photo = photo
+        self.theme = theme
+        self.photos = photos?.isEmpty == false ? photos! : [photo]
+        _selectedPageIndex = State(initialValue: self.photos.firstIndex { $0.id == photo.id } ?? 0)
+        _selectedThemeId = State(initialValue: theme.id)
     }
 
-    private var panGesture: some Gesture {
-        DragGesture()
-            .onChanged { val in
-                guard zoomScale > 1.0 else { return }
-                panOffset = CGSize(
-                    width: lastPanOffset.width + val.translation.width,
-                    height: lastPanOffset.height + val.translation.height
-                )
-            }
-            .onEnded { val in
-                lastPanOffset = panOffset
-            }
+    private var currentPhoto: MemoryPhoto {
+        guard !photos.isEmpty else { return photo }
+        return photos[displayIndex]
     }
 
-    @State private var uiImage: UIImage? = nil
+    private var setThemes: [MemoryTheme] {
+        themes
+            .filter { $0.setId == currentPhoto.setId }
+            .sorted { $0.createdAt < $1.createdAt }
+    }
 
-    private var themeItems: [MemoryItem] {
+    private var selectedTheme: MemoryTheme {
+        setThemes.first { $0.id == selectedThemeId } ?? theme
+    }
+
+    private func themeItems(for photo: MemoryPhoto) -> [MemoryItem] {
         items
-            .filter { $0.photoId == photo.id && $0.themeId == theme.id }
+            .filter { $0.photoId == photo.id && $0.themeId == selectedTheme.id }
             .sorted { $0.orderIndex < $1.orderIndex }
     }
 
     var body: some View {
         Group {
-            if let image = uiImage {
-                GeometryReader { proxy in
-                    let imageFrame = aspectFitFrame(imageSize: image.size, containerSize: proxy.size)
-
-                    ZStack(alignment: .topLeading) {
-                        PalaceStyle.paper.opacity(0.58)
-                            .ignoresSafeArea()
-
-                        // A canvas to group the image and the items together, so they scale/offset as one.
-                        ZStack(alignment: .topLeading) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: imageFrame.width, height: imageFrame.height)
-                                .position(x: imageFrame.midX, y: imageFrame.midY)
-
-                            ForEach(themeItems) { item in
-                                MemoryItemView(item: item)
-                                    .position(
-                                        x: imageFrame.minX + item.x * imageFrame.width,
-                                        y: imageFrame.minY + item.y * imageFrame.height
-                                    )
-                                    .scaleEffect(item.scale)
-                                    .rotationEffect(.degrees(item.rotation))
-                                    .gesture(dragGesture(for: item, in: imageFrame))
-                                    .onTapGesture {
-                                        editingItem = item
-                                    }
-                                    .contextMenu {
-                                        Button("Delete Note", role: .destructive) {
-                                            delete(item)
-                                        }
-                                    }
-                            }
-                        }
-                        .scaleEffect(zoomScale)
-                        .offset(panOffset)
-                        .gesture(
-                            panGesture
-                                .simultaneously(with: magnification)
+            if photos.count > 1 {
+                TabView(selection: $selectedPageIndex) {
+                    if let lastPhoto = photos.last {
+                        PhotoEditorCanvas(
+                            photo: lastPhoto,
+                            items: themeItems(for: lastPhoto),
+                            editingItem: $editingItem,
+                            onDelete: delete,
+                            onSave: { try? modelContext.save() }
                         )
-                        .onTapGesture(count: 2) {
-                            withAnimation(.spring()) {
-                                if zoomScale > 1.0 {
-                                    zoomScale = 1.0
-                                    lastZoomScale = 1.0
-                                    panOffset = .zero
-                                    lastPanOffset = .zero
-                                } else {
-                                    zoomScale = 2.0
-                                    lastZoomScale = 2.0
-                                }
-                            }
-                        }
+                        .tag(-1)
+                    }
+
+                    ForEach(photos) { pagePhoto in
+                        let index = photos.firstIndex { $0.id == pagePhoto.id } ?? 0
+
+                        PhotoEditorCanvas(
+                            photo: pagePhoto,
+                            items: themeItems(for: pagePhoto),
+                            editingItem: $editingItem,
+                            onDelete: delete,
+                            onSave: { try? modelContext.save() }
+                        )
+                        .tag(index)
+                    }
+
+                    if let firstPhoto = photos.first {
+                        PhotoEditorCanvas(
+                            photo: firstPhoto,
+                            items: themeItems(for: firstPhoto),
+                            editingItem: $editingItem,
+                            onDelete: delete,
+                            onSave: { try? modelContext.save() }
+                        )
+                        .tag(photos.count)
                     }
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .onChange(of: selectedPageIndex) { _, newIndex in
+                    loopPhotoIndexIfNeeded(newIndex)
+                }
             } else {
-                ProgressView("Loading...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(NotebookBackground())
+                PhotoEditorCanvas(
+                    photo: currentPhoto,
+                    items: themeItems(for: currentPhoto),
+                    editingItem: $editingItem,
+                    onDelete: delete,
+                    onSave: { try? modelContext.save() }
+                )
             }
         }
-        .task {
-            uiImage = await ImageLoader.shared.load(fileName: photo.imagePath)
-        }
-        .navigationTitle(theme.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                ThemePickerMenu(themes: setThemes, selectedThemeId: $selectedThemeId)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    editingLocationPhoto = currentPhoto
+                } label: {
+                    Image(systemName: currentPhoto.latitude == nil ? "mappin.and.ellipse" : "mappin")
+                }
+                .accessibilityLabel(
+                    currentPhoto.latitude == nil
+                        ? String(localized: "Add Location")
+                        : String(localized: "Change Location")
+                )
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 8) {
-                HStack {
-                    Label("Theme: \(theme.name)", systemImage: "tag")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(PalaceStyle.mutedInk)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(.white.opacity(0.5), in: Capsule())
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.top, 4)
-
                 HStack(spacing: 12) {
                     ForEach(MemoryItemType.allCases) { type in
                         Button {
@@ -192,15 +175,53 @@ struct PhotoEditorView: View {
                     delete(item)
                     editingItem = nil
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
+            }
+        }
+        .sheet(item: $editingLocationPhoto) { photo in
+            LocationEditorView(photo: photo)
+        }
+    }
+
+    private var displayIndex: Int {
+        guard !photos.isEmpty else { return 0 }
+        if selectedPageIndex < 0 {
+            return photos.count - 1
+        }
+        if selectedPageIndex >= photos.count {
+            return 0
+        }
+        return selectedPageIndex
+    }
+
+    private func loopPhotoIndexIfNeeded(_ index: Int) {
+        guard photos.count > 1 else { return }
+        if index < 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                guard selectedPageIndex < 0 else { return }
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    selectedPageIndex = photos.count - 1
+                }
+            }
+        } else if index >= photos.count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                guard selectedPageIndex >= photos.count else { return }
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    selectedPageIndex = 0
+                }
             }
         }
     }
 
     private func addNote(type: MemoryItemType) {
+        let photo = currentPhoto
         let item = MemoryItem(
             photoId: photo.id,
-            themeId: theme.id,
+            themeId: selectedTheme.id,
             type: type,
             frontText: defaultFrontText(for: type),
             backText: "",
@@ -210,10 +231,10 @@ struct PhotoEditorView: View {
             scale: type == .arrow ? 1.1 : 1,
             x: 0.5,
             y: 0.5,
-            orderIndex: themeItems.count
+            orderIndex: themeItems(for: photo).count
         )
         item.photo = photo
-        item.theme = theme
+        item.theme = selectedTheme
         modelContext.insert(item)
         try? modelContext.save()
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -225,10 +246,11 @@ struct PhotoEditorView: View {
             guard let data = try await pickerItem.loadTransferable(type: Data.self) else {
                 return
             }
+            let photo = currentPhoto
             let imagePath = try ImageStore.saveImageData(data)
             let item = MemoryItem(
                 photoId: photo.id,
-                themeId: theme.id,
+                themeId: selectedTheme.id,
                 type: .image,
                 frontText: String(localized: "Image Note"),
                 backText: "",
@@ -236,10 +258,10 @@ struct PhotoEditorView: View {
                 scale: 1,
                 x: 0.5,
                 y: 0.5,
-                orderIndex: themeItems.count
+                orderIndex: themeItems(for: photo).count
             )
             item.photo = photo
-            item.theme = theme
+            item.theme = selectedTheme
             modelContext.insert(item)
             try? modelContext.save()
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -259,8 +281,133 @@ struct PhotoEditorView: View {
     }
 
     private func normalizeItemOrder() {
-        for (index, item) in themeItems.enumerated() {
+        for (index, item) in themeItems(for: currentPhoto).enumerated() {
             item.orderIndex = index
+        }
+    }
+
+    private func defaultFrontText(for type: MemoryItemType) -> String {
+        switch type {
+        case .stickyText:
+            String(localized: "New Note")
+        case .image:
+            String(localized: "Image Note")
+        case .icon:
+            String(localized: "Star")
+        case .numberLabel:
+            "\(themeItems(for: currentPhoto).filter { $0.itemType == .numberLabel }.count + 1)"
+        case .arrow:
+            String(localized: "Arrow")
+        }
+    }
+}
+
+private struct PhotoEditorCanvas: View {
+    let photo: MemoryPhoto
+    let items: [MemoryItem]
+    @Binding var editingItem: MemoryItem?
+    let onDelete: (MemoryItem) -> Void
+    let onSave: () -> Void
+
+    @State private var draggingItemId: UUID?
+    @State private var dragStart = CGPoint.zero
+    @State private var uiImage: UIImage?
+    @State private var zoomScale: CGFloat = 1.0
+    @State private var lastZoomScale: CGFloat = 1.0
+    @State private var panOffset: CGSize = .zero
+    @State private var lastPanOffset: CGSize = .zero
+
+    private var magnification: some Gesture {
+        MagnificationGesture()
+            .onChanged { val in
+                let newScale = lastZoomScale * val
+                zoomScale = min(max(newScale, 1.0), 4.0)
+            }
+            .onEnded { _ in
+                lastZoomScale = zoomScale
+            }
+    }
+
+    private var panGesture: some Gesture {
+        DragGesture()
+            .onChanged { val in
+                guard zoomScale > 1.0 else { return }
+                panOffset = CGSize(
+                    width: lastPanOffset.width + val.translation.width,
+                    height: lastPanOffset.height + val.translation.height
+                )
+            }
+            .onEnded { _ in
+                lastPanOffset = panOffset
+            }
+    }
+
+    var body: some View {
+        Group {
+            if let image = uiImage {
+                GeometryReader { proxy in
+                    let imageFrame = aspectFitFrame(imageSize: image.size, containerSize: proxy.size)
+
+                    ZStack(alignment: .topLeading) {
+                        PalaceStyle.paper.opacity(0.58)
+                            .ignoresSafeArea()
+
+                        ZStack(alignment: .topLeading) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: imageFrame.width, height: imageFrame.height)
+                                .position(x: imageFrame.midX, y: imageFrame.midY)
+
+                            ForEach(items) { item in
+                                MemoryItemView(item: item)
+                                    .position(
+                                        x: imageFrame.minX + item.x * imageFrame.width,
+                                        y: imageFrame.minY + item.y * imageFrame.height
+                                    )
+                                    .scaleEffect(item.scale)
+                                    .rotationEffect(.degrees(item.rotation))
+                                    .gesture(dragGesture(for: item, in: imageFrame))
+                                    .onTapGesture {
+                                        editingItem = item
+                                    }
+                                    .contextMenu {
+                                        Button("Delete Note", role: .destructive) {
+                                            onDelete(item)
+                                        }
+                                    }
+                            }
+                        }
+                        .scaleEffect(zoomScale)
+                        .offset(panOffset)
+                        .gesture(
+                            panGesture
+                                .simultaneously(with: magnification)
+                        )
+                        .onTapGesture(count: 2) {
+                            withAnimation(.spring()) {
+                                if zoomScale > 1.0 {
+                                    zoomScale = 1.0
+                                    lastZoomScale = 1.0
+                                    panOffset = .zero
+                                    lastPanOffset = .zero
+                                } else {
+                                    zoomScale = 2.0
+                                    lastZoomScale = 2.0
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                ProgressView("Loading...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(NotebookBackground())
+            }
+        }
+        .task(id: photo.imagePath) {
+            uiImage = nil
+            uiImage = await ImageLoader.shared.load(fileName: photo.imagePath)
         }
     }
 
@@ -279,7 +426,7 @@ struct PhotoEditorView: View {
             .onEnded { _ in
                 draggingItemId = nil
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                try? modelContext.save()
+                onSave()
             }
     }
 
@@ -287,20 +434,6 @@ struct PhotoEditorView: View {
         min(max(value, 0.05), 0.95)
     }
 
-    private func defaultFrontText(for type: MemoryItemType) -> String {
-        switch type {
-        case .stickyText:
-            String(localized: "New Note")
-        case .image:
-            String(localized: "Image Note")
-        case .icon:
-            String(localized: "Star")
-        case .numberLabel:
-            "\(themeItems.filter { $0.itemType == .numberLabel }.count + 1)"
-        case .arrow:
-            String(localized: "Arrow")
-        }
-    }
 }
 
 private struct NoteEditorView: View {
@@ -344,17 +477,17 @@ private struct NoteEditorView: View {
                         .lineLimit(3...8)
                 }
 
-                Section {
-                    Button("Delete Note", role: .destructive) {
-                        onDelete()
-                        dismiss()
-                    }
-                }
             }
             .scrollContentBackground(.hidden)
             .background(NotebookBackground())
             .navigationTitle("Edit Note")
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Delete", role: .destructive) {
+                        onDelete()
+                        dismiss()
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
                         item.updatedAt = Date()

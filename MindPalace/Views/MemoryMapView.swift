@@ -4,8 +4,6 @@ import SwiftData
 import SwiftUI
 
 struct MemoryMapView: View {
-    @Environment(\.modelContext) private var modelContext
-
     @Query(sort: \MemorySet.updatedAt, order: .reverse) private var memorySets: [MemorySet]
     @Query private var photos: [MemoryPhoto]
     @Query private var themes: [MemoryTheme]
@@ -15,12 +13,12 @@ struct MemoryMapView: View {
     @State private var selectedThemeId: UUID?
     @State private var filterSearchText = ""
     @State private var isSearchActive = false
-    @State private var isAddingSet = false
     @State private var selectedPhotoId: UUID?
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var animatedSelectedPhoto: MemoryPhoto? = nil
     @StateObject private var locationProvider = LocationProvider()
     @State private var didSetInitialCamera = false
+    @State private var didRestoreLastAlbum = false
     @State private var isCenteringOnUserLocation = false
     @FocusState private var isSearchFocused: Bool
 
@@ -61,12 +59,15 @@ struct MemoryMapView: View {
         ZStack(alignment: .top) {
             if visiblePhotos.isEmpty {
                 MapEmptyState()
+                    .onTapGesture {
+                        dismissSearch()
+                    }
             } else {
                 Map(position: $cameraPosition, selection: $selectedPhotoId) {
                     UserAnnotation()
 
                     ForEach(visiblePhotos) { photo in
-                        Annotation(photo.title, coordinate: coordinate(for: photo)) {
+                        Annotation(photo.set?.name ?? String(localized: "Album"), coordinate: coordinate(for: photo)) {
                             PhotoMapPin(
                                 imagePath: photo.imagePath,
                                 isSelected: selectedPhotoId == photo.id
@@ -80,6 +81,11 @@ struct MemoryMapView: View {
                 }
                 .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
                 .ignoresSafeArea(edges: .bottom)
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        dismissSearch()
+                    }
+                )
             }
 
             VStack(spacing: 8) {
@@ -98,17 +104,13 @@ struct MemoryMapView: View {
                     FilterResultList {
                         ForEach(albumMatches) { memorySet in
                             FilterResultButton(title: memorySet.name, subtitle: String(localized: "\(memorySet.photos.count) photos")) {
-                                selectedSetId = memorySet.id
-                                selectedThemeId = nil
-                                endSearch()
+                                select(memorySet)
                             }
                         }
 
                         ForEach(themeMatches) { theme in
                             FilterResultButton(title: theme.name, subtitle: theme.set?.name ?? String(localized: "Album")) {
-                                selectedThemeId = theme.id
-                                selectedSetId = theme.setId
-                                endSearch()
+                                select(theme)
                             }
                         }
                     }
@@ -116,7 +118,7 @@ struct MemoryMapView: View {
                     .padding(.horizontal, 20)
                 }
             }
-            .padding(.top, 8)
+            .padding(.top, 0)
         }
         .safeAreaInset(edge: .bottom) {
             if let animatedSelectedPhoto {
@@ -133,26 +135,11 @@ struct MemoryMapView: View {
                 .padding()
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isAddingSet = true
-                } label: {
-                    Label("Add Album", systemImage: "plus")
-                }
-                .accessibilityIdentifier("memoryMapAddAlbumButton")
-            }
-        }
-        .sheet(isPresented: $isAddingSet) {
-            SetNameEditor(title: String(localized: "Create Album"), initialName: "") { name in
-                createSet(named: name)
-            }
-            .presentationDetents([.medium])
-        }
         .onAppear {
             if !isLocationDisabledForUITests {
                 locationProvider.requestLocationIfPossible()
             }
+            restoreLastAlbumIfNeeded()
             updateInitialCameraIfNeeded()
             selectFirstVisiblePhotoForAppStoreScreenshots()
         }
@@ -169,6 +156,7 @@ struct MemoryMapView: View {
             if let selectedTheme, selectedTheme.setId != selectedSetId {
                 selectedThemeId = nil
             }
+            saveLastAlbumIfNeeded()
             selectedPhotoId = nil
             withAnimation {
                 animatedSelectedPhoto = nil
@@ -176,12 +164,25 @@ struct MemoryMapView: View {
             updateCameraForVisiblePhotosIfNeeded()
             selectFirstVisiblePhotoForAppStoreScreenshots()
         }
+        .onChange(of: memorySets.map(\.id)) {
+            restoreLastAlbumIfNeeded()
+            updateInitialCameraIfNeeded()
+        }
         .onChange(of: selectedPhotoId) { _, newValue in
             if newValue != nil {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
             }
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                 animatedSelectedPhoto = visiblePhotos.first { $0.id == newValue }
+            }
+        }
+        .onChange(of: isSearchFocused) { _, isFocused in
+            if !isFocused {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    if !isSearchFocused {
+                        isSearchActive = false
+                    }
+                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -196,7 +197,7 @@ struct MemoryMapView: View {
 
     private var albumMatches: [MemorySet] {
         let query = filterSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return [] }
+        guard !query.isEmpty else { return Array(memorySets.prefix(6)) }
         return Array(memorySets.filter { $0.name.localizedStandardContains(query) }.prefix(6))
     }
 
@@ -230,6 +231,10 @@ struct MemoryMapView: View {
         ProcessInfo.processInfo.arguments.contains("-AppStoreScreenshotData")
     }
 
+    private var lastDisplayedAlbumKey: String {
+        "lastDisplayedAlbumId"
+    }
+
     private func beginSearch() {
         isSearchActive = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -243,9 +248,29 @@ struct MemoryMapView: View {
         isSearchActive = false
     }
 
+    private func dismissSearch() {
+        guard isSearchActive || isSearchFocused else {
+            return
+        }
+        isSearchFocused = false
+        isSearchActive = false
+    }
+
     private func clearFilters() {
         selectedSetId = nil
         selectedThemeId = nil
+        endSearch()
+    }
+
+    private func select(_ memorySet: MemorySet) {
+        selectedSetId = memorySet.id
+        selectedThemeId = nil
+        endSearch()
+    }
+
+    private func select(_ theme: MemoryTheme) {
+        selectedThemeId = theme.id
+        selectedSetId = theme.setId
         endSearch()
     }
 
@@ -260,13 +285,30 @@ struct MemoryMapView: View {
             .first
     }
 
-    private func createSet(named name: String) {
-        let memorySet = MemorySet(name: name)
-        let theme = MemoryTheme(setId: memorySet.id, name: String(localized: "Default"))
-        theme.set = memorySet
-        modelContext.insert(memorySet)
-        modelContext.insert(theme)
-        try? modelContext.save()
+    private func restoreLastAlbumIfNeeded() {
+        guard !didRestoreLastAlbum else {
+            return
+        }
+        guard !memorySets.isEmpty else {
+            return
+        }
+        guard selectedSetId == nil,
+              let idString = UserDefaults.standard.string(forKey: lastDisplayedAlbumKey),
+              let id = UUID(uuidString: idString),
+              memorySets.contains(where: { $0.id == id })
+        else {
+            didRestoreLastAlbum = true
+            return
+        }
+        selectedSetId = id
+        didRestoreLastAlbum = true
+    }
+
+    private func saveLastAlbumIfNeeded() {
+        guard let selectedSetId else {
+            return
+        }
+        UserDefaults.standard.set(selectedSetId.uuidString, forKey: lastDisplayedAlbumKey)
     }
 
     private func updateInitialCameraIfNeeded() {
@@ -459,6 +501,7 @@ private struct FilterResultList<Content: View>: View {
         VStack(spacing: 0) {
             content()
         }
+        .frame(maxWidth: .infinity)
         .background(.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
@@ -490,8 +533,10 @@ private struct FilterResultButton: View {
                     .font(.caption.weight(.bold))
                     .foregroundStyle(PalaceStyle.mutedInk)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -538,15 +583,15 @@ private struct MapPreviewCard: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            if let theme {
+            if let memorySet, let theme {
                 NavigationLink {
-                    PhotoEditorView(photo: photo, theme: theme)
+                    ReviewView(memorySet: memorySet, theme: theme, initialPhoto: photo)
                 } label: {
                     cardContent
                         .padding(.trailing, 56)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Open photo \(photo.title)"))
+                .accessibilityLabel(String(localized: "Open photo"))
             } else {
                 cardContent
             }
@@ -587,13 +632,9 @@ private struct MapPreviewCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(photo.title)
+                Text(memorySet?.name ?? String(localized: "Albums"))
                     .font(.headline)
                     .foregroundStyle(PalaceStyle.ink)
-                    .lineLimit(1)
-                Text(memorySet?.name ?? String(localized: "Albums"))
-                    .font(.subheadline)
-                    .foregroundStyle(PalaceStyle.mutedInk)
                     .lineLimit(1)
                 Label("\(noteCount) notes", systemImage: "sparkles")
                     .font(.caption)

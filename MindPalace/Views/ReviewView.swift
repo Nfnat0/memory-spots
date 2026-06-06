@@ -6,12 +6,21 @@ struct ReviewView: View {
     @Environment(\.modelContext) private var modelContext
 
     let memorySet: MemorySet
-    let theme: MemoryTheme
 
     @Query private var photos: [MemoryPhoto]
+    @Query private var themes: [MemoryTheme]
     @Query private var items: [MemoryItem]
 
-    @State private var currentIndex = 0
+    @State private var currentIndex: Int
+    @State private var selectedThemeId: UUID
+
+    init(memorySet: MemorySet, theme: MemoryTheme, initialPhoto: MemoryPhoto? = nil) {
+        self.memorySet = memorySet
+
+        let sortedPhotos = memorySet.photos.sorted { $0.orderIndex < $1.orderIndex }
+        _currentIndex = State(initialValue: sortedPhotos.firstIndex { $0.id == initialPhoto?.id } ?? 0)
+        _selectedThemeId = State(initialValue: theme.id)
+    }
 
     private var orderedPhotos: [MemoryPhoto] {
         photos
@@ -19,39 +28,166 @@ struct ReviewView: View {
             .sorted { $0.orderIndex < $1.orderIndex }
     }
 
+    private var setThemes: [MemoryTheme] {
+        themes
+            .filter { $0.setId == memorySet.id }
+            .sorted { $0.createdAt < $1.createdAt }
+    }
+
+    private var selectedTheme: MemoryTheme? {
+        setThemes.first { $0.id == selectedThemeId } ?? setThemes.first
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            if orderedPhotos.isEmpty {
-                ContentUnavailableView(
-                    "No Notes to Review",
-                    systemImage: "map",
-                    description: Text("Add notes to this theme to walk through them in photo order.")
-                )
-            } else {
-                TabView(selection: $currentIndex) {
-                    ForEach(Array(orderedPhotos.enumerated()), id: \.element.id) { index, photo in
-                        ReviewPhotoPageView(
-                            photo: photo,
-                            theme: theme,
-                            items: items.filter { $0.photoId == photo.id && $0.themeId == theme.id }
-                        )
-                        .tag(index)
+            if let selectedTheme {
+                if orderedPhotos.isEmpty {
+                    ContentUnavailableView(
+                        "No Notes to Review",
+                        systemImage: "map",
+                        description: Text("Add notes to this theme to walk through them in photo order.")
+                    )
+                } else {
+                    TabView(selection: $currentIndex) {
+                        if let lastPhoto = orderedPhotos.last {
+                            ReviewPhotoPageView(
+                                photo: lastPhoto,
+                                theme: selectedTheme,
+                                items: items.filter { $0.photoId == lastPhoto.id && $0.themeId == selectedTheme.id }
+                            )
+                            .tag(-1)
+                        }
+
+                        ForEach(Array(orderedPhotos.enumerated()), id: \.element.id) { index, photo in
+                            ReviewPhotoPageView(
+                                photo: photo,
+                                theme: selectedTheme,
+                                items: items.filter { $0.photoId == photo.id && $0.themeId == selectedTheme.id }
+                            )
+                            .tag(index)
+                        }
+
+                        if let firstPhoto = orderedPhotos.first {
+                            ReviewPhotoPageView(
+                                photo: firstPhoto,
+                                theme: selectedTheme,
+                                items: items.filter { $0.photoId == firstPhoto.id && $0.themeId == selectedTheme.id }
+                            )
+                            .tag(orderedPhotos.count)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .onChange(of: currentIndex) { _, newIndex in
+                        loopReviewIndexIfNeeded(newIndex)
+                    }
+                    .overlay(alignment: .topLeading) {
+                        Text(verbatim: "\(displayIndex + 1) / \(orderedPhotos.count)")
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.regularMaterial, in: Capsule())
+                            .padding()
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .overlay(alignment: .topLeading) {
-                    Text(verbatim: "\(currentIndex + 1) / \(orderedPhotos.count)")
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(.regularMaterial, in: Capsule())
-                        .padding()
-                }
+            } else {
+                ContentUnavailableView("No Themes", systemImage: "tag")
             }
         }
         .background(NotebookBackground())
-        .navigationTitle(orderedPhotos.indices.contains(currentIndex) ? orderedPhotos[currentIndex].title : theme.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                ThemePickerMenu(themes: setThemes, selectedThemeId: $selectedThemeId)
+            }
+            if let currentPhoto, let selectedTheme {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        PhotoEditorView(photo: currentPhoto, theme: selectedTheme, photos: orderedPhotos)
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                }
+            }
+        }
+    }
+
+    private var displayIndex: Int {
+        guard !orderedPhotos.isEmpty else { return 0 }
+        if currentIndex < 0 {
+            return orderedPhotos.count - 1
+        }
+        if currentIndex >= orderedPhotos.count {
+            return 0
+        }
+        return currentIndex
+    }
+
+    private var currentPhoto: MemoryPhoto? {
+        guard orderedPhotos.indices.contains(displayIndex) else {
+            return nil
+        }
+        return orderedPhotos[displayIndex]
+    }
+
+    private func loopReviewIndexIfNeeded(_ index: Int) {
+        guard orderedPhotos.count > 1 else { return }
+        if index < 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                guard currentIndex < 0 else { return }
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    currentIndex = orderedPhotos.count - 1
+                }
+            }
+        } else if index >= orderedPhotos.count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                guard currentIndex >= orderedPhotos.count else { return }
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    currentIndex = 0
+                }
+            }
+        }
+    }
+}
+
+struct ThemePickerMenu: View {
+    let themes: [MemoryTheme]
+    @Binding var selectedThemeId: UUID
+
+    private var selectedThemeName: String {
+        themes.first { $0.id == selectedThemeId }?.name ?? String(localized: "Theme")
+    }
+
+    var body: some View {
+        Menu {
+            ForEach(themes) { theme in
+                Button {
+                    selectedThemeId = theme.id
+                } label: {
+                    if theme.id == selectedThemeId {
+                        Label(theme.name, systemImage: "checkmark")
+                    } else {
+                        Text(theme.name)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(selectedThemeName)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Image(systemName: "chevron.down")
+                    .font(.caption.weight(.semibold))
+            }
+            .frame(minWidth: 120, maxWidth: 220)
+            .foregroundStyle(PalaceStyle.ink)
+            .contentShape(Rectangle())
+        }
+        .disabled(themes.count < 2)
     }
 }
 

@@ -17,7 +17,10 @@ struct MemorySetDetailView: View {
     @State private var selectedThemeId: UUID?
     @State private var isAddingTheme = false
     @State private var isAddingPhoto = false
-    @State private var editingLocationPhoto: MemoryPhoto?
+    @State private var isEditingAlbum = false
+    @State private var renamingTheme: MemoryTheme?
+    @State private var deletingTheme: MemoryTheme?
+    @State private var deletingPhoto: MemoryPhoto?
     @State private var openingPhoto: MemoryPhoto?
 
     private var setPhotos: [MemoryPhoto] {
@@ -40,7 +43,6 @@ struct MemorySetDetailView: View {
     var body: some View {
         List {
             themeSection
-            reviewSection
             photosSection
         }
         .listStyle(.plain)
@@ -48,15 +50,20 @@ struct MemorySetDetailView: View {
         .background(NotebookBackground())
         .navigationTitle(memorySet.name)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isAddingPhoto = true
-                } label: {
-                    Label("Add Photo", systemImage: "photo.badge.plus")
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button(isEditingAlbum ? "Done" : "Edit") {
+                    withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
+                        isEditingAlbum.toggle()
+                    }
                 }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                EditButton()
+
+                if !isEditingAlbum {
+                    Button {
+                        isAddingPhoto = true
+                    } label: {
+                        Label("Add Photo", systemImage: "photo.badge.plus")
+                    }
+                }
             }
         }
         .onAppear {
@@ -67,7 +74,7 @@ struct MemorySetDetailView: View {
         }
         .navigationDestination(item: $openingPhoto) { photo in
             if let selectedTheme {
-                PhotoEditorView(photo: photo, theme: selectedTheme)
+                ReviewView(memorySet: memorySet, theme: selectedTheme, initialPhoto: photo)
             } else {
                 ContentUnavailableView("No Themes", systemImage: "tag")
             }
@@ -76,14 +83,57 @@ struct MemorySetDetailView: View {
             SetNameEditor(title: String(localized: "Create Theme"), initialName: "") { name in
                 createTheme(named: name)
             }
-            .presentationDetents([.medium])
+            .presentationDetents([.large])
         }
         .sheet(isPresented: $isAddingPhoto) {
             AddPhotoSheet(memorySet: memorySet, nextOrderIndex: setPhotos.count)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
-        .sheet(item: $editingLocationPhoto) { photo in
-            LocationEditorView(photo: photo)
+        .sheet(item: $renamingTheme) { theme in
+            SetNameEditor(title: String(localized: "Rename"), initialName: theme.name) { name in
+                renameTheme(theme, to: name)
+            }
+            .presentationDetents([.large])
+        }
+        .confirmationDialog(
+            "Delete Theme?",
+            isPresented: Binding(
+                get: { deletingTheme != nil },
+                set: { if !$0 { deletingTheme = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let deletingTheme {
+                Button("Delete Theme", role: .destructive) {
+                    deleteTheme(deletingTheme)
+                    self.deletingTheme = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                deletingTheme = nil
+            }
+        } message: {
+            Text("This will delete this theme and its notes.")
+        }
+        .confirmationDialog(
+            "Delete Image?",
+            isPresented: Binding(
+                get: { deletingPhoto != nil },
+                set: { if !$0 { deletingPhoto = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let deletingPhoto {
+                Button("Delete Image", role: .destructive) {
+                    deletePhoto(deletingPhoto)
+                    self.deletingPhoto = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                deletingPhoto = nil
+            }
+        } message: {
+            Text("This will delete this image and its notes.")
         }
     }
 
@@ -97,17 +147,17 @@ struct MemorySetDetailView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(setThemes) { theme in
-                            Button {
+                            ThemeChip(
+                                title: theme.name,
+                                isSelected: isSelected(theme),
+                                isEditing: isEditingAlbum,
+                                canDelete: setThemes.count > 1
+                            ) {
                                 selectedThemeId = theme.id
-                            } label: {
-                                ThemeChip(title: theme.name, isSelected: isSelected(theme))
-                            }
-                            .buttonStyle(.plain)
-                            .contextMenu {
-                                Button("Delete Theme", systemImage: "trash", role: .destructive) {
-                                    deleteTheme(theme)
-                                }
-                                .disabled(setThemes.count < 2)
+                            } onRename: {
+                                renamingTheme = theme
+                            } onDelete: {
+                                deletingTheme = theme
                             }
                         }
 
@@ -133,21 +183,6 @@ struct MemorySetDetailView: View {
         .listRowBackground(Color.white.opacity(0.62))
     }
 
-    @ViewBuilder
-    private var reviewSection: some View {
-        if let selectedTheme {
-            Section {
-                NavigationLink {
-                    ReviewView(memorySet: memorySet, theme: selectedTheme)
-                } label: {
-                    Label("Review Notes", systemImage: "play.circle")
-                }
-                .disabled(reviewItems(for: selectedTheme).isEmpty)
-            }
-            .listRowBackground(Color.white.opacity(0.62))
-        }
-    }
-
     private var photosSection: some View {
         Section {
             if setPhotos.isEmpty {
@@ -158,16 +193,12 @@ struct MemorySetDetailView: View {
                 )
                 .listRowBackground(Color.clear)
             } else {
-                ForEach(setPhotos) { photo in
-                    PhotoRouteRow(
-                        photo: photo,
-                        noteCount: selectedTheme.map { noteCount(for: photo, theme: $0) } ?? 0,
-                        onEditLocation: { editingLocationPhoto = photo },
-                        onOpen: { openingPhoto = photo }
-                    )
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 10)], spacing: 10) {
+                    ForEach(setPhotos) { photo in
+                        photoTile(for: photo)
+                    }
                 }
-                .onDelete(perform: deletePhotos)
-                .onMove(perform: movePhotos)
+                .padding(.vertical, 4)
                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
@@ -189,10 +220,6 @@ struct MemorySetDetailView: View {
         selectedTheme?.id == theme.id
     }
 
-    private func noteCount(for photo: MemoryPhoto, theme: MemoryTheme) -> Int {
-        photo.items.filter { $0.theme == theme }.count
-    }
-
     private func createDefaultTheme() {
         createTheme(named: String(localized: "Default"))
     }
@@ -202,6 +229,12 @@ struct MemorySetDetailView: View {
         theme.set = memorySet
         modelContext.insert(theme)
         selectedThemeId = theme.id
+        memorySet.updatedAt = Date()
+        try? modelContext.save()
+    }
+
+    private func renameTheme(_ theme: MemoryTheme, to name: String) {
+        theme.name = name
         memorySet.updatedAt = Date()
         try? modelContext.save()
     }
@@ -218,21 +251,50 @@ struct MemorySetDetailView: View {
         try? modelContext.save()
     }
 
-    private func deletePhotos(at offsets: IndexSet) {
-        for index in offsets {
-            let photo = setPhotos[index]
-            ImageStore.deleteImage(named: photo.imagePath)
-            modelContext.delete(photo)
+    @ViewBuilder
+    private func photoTile(for photo: MemoryPhoto) -> some View {
+        let index = setPhotos.firstIndex { $0.id == photo.id }
+
+        PhotoGridTile(
+            photo: photo,
+            isEditing: isEditingAlbum,
+            canMoveBackward: index.map { $0 > 0 } ?? false,
+            canMoveForward: index.map { $0 < setPhotos.count - 1 } ?? false
+        ) {
+            if !isEditingAlbum {
+                openingPhoto = photo
+            }
+        } onDelete: {
+            deletingPhoto = photo
+        } onMoveBackward: {
+            movePhoto(photo, by: -1)
+        } onMoveForward: {
+            movePhoto(photo, by: 1)
         }
+    }
+
+    private func deletePhoto(_ photo: MemoryPhoto) {
+        ImageStore.deleteImage(named: photo.imagePath)
+        modelContext.delete(photo)
         normalizePhotoOrder()
         memorySet.updatedAt = Date()
         try? modelContext.save()
     }
 
-    private func movePhotos(from source: IndexSet, to destination: Int) {
-        var reordered = setPhotos
-        reordered.move(fromOffsets: source, toOffset: destination)
-        for (index, photo) in reordered.enumerated() {
+    private func movePhoto(_ photo: MemoryPhoto, by offset: Int) {
+        guard let sourceIndex = setPhotos.firstIndex(where: { $0.id == photo.id })
+        else {
+            return
+        }
+        let targetIndex = sourceIndex + offset
+        guard setPhotos.indices.contains(targetIndex) else {
+            return
+        }
+
+        var reorderedPhotos = setPhotos
+        reorderedPhotos.swapAt(sourceIndex, targetIndex)
+
+        for (index, photo) in reorderedPhotos.enumerated() {
             photo.orderIndex = index
         }
         memorySet.updatedAt = Date()
@@ -245,90 +307,153 @@ struct MemorySetDetailView: View {
         }
     }
 
-    private func reviewItems(for theme: MemoryTheme) -> [MemoryItem] {
-        setPhotos.flatMap { $0.items.filter { $0.theme == theme } }
-    }
 }
 
 private struct ThemeChip: View {
     let title: String
     let isSelected: Bool
+    let isEditing: Bool
+    let canDelete: Bool
+    let onSelect: () -> Void
+    let onRename: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
-        Text(title)
-            .font(.subheadline.weight(.semibold))
-            .lineLimit(1)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(isSelected ? PalaceStyle.coral : .white.opacity(0.72), in: Capsule())
-            .foregroundStyle(isSelected ? .white : PalaceStyle.ink)
-            .overlay {
-                Capsule()
-                    .stroke(PalaceStyle.paperDeep.opacity(0.5), lineWidth: isSelected ? 0 : 1)
+        HStack(spacing: 8) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+
+            if isEditing {
+                Divider()
+                    .frame(height: 18)
+                    .overlay((isSelected ? Color.white : PalaceStyle.paperDeep).opacity(0.55))
+
+                Button(action: onRename) {
+                    Image(systemName: "pencil")
+                        .font(.caption.weight(.bold))
+                        .frame(width: 22, height: 22)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Rename"))
+
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "minus.circle.fill")
+                        .font(.caption.weight(.bold))
+                        .frame(width: 22, height: 22)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(canDelete ? .red : PalaceStyle.mutedInk.opacity(0.45))
+                .disabled(!canDelete)
+                .accessibilityLabel(String(localized: "Delete"))
             }
+        }
+        .padding(.leading, 14)
+        .padding(.trailing, isEditing ? 8 : 14)
+        .padding(.vertical, 8)
+        .background(isSelected ? PalaceStyle.coral : .white.opacity(0.72), in: Capsule())
+        .foregroundStyle(isSelected ? .white : PalaceStyle.ink)
+        .overlay {
+            Capsule()
+                .stroke(PalaceStyle.paperDeep.opacity(0.5), lineWidth: isSelected ? 0 : 1)
+        }
+        .contentShape(Capsule())
+        .onTapGesture {
+            if !isEditing {
+                onSelect()
+            }
+        }
     }
 }
 
-private struct PhotoRouteRow: View {
+private struct PhotoGridTile: View {
     let photo: MemoryPhoto
-    let noteCount: Int
-    let onEditLocation: () -> Void
+    let isEditing: Bool
+    let canMoveBackward: Bool
+    let canMoveForward: Bool
     let onOpen: () -> Void
+    let onDelete: () -> Void
+    let onMoveBackward: () -> Void
+    let onMoveForward: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 12) {
-                MemoryPhotoView(imagePath: photo.imagePath) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(.secondary.opacity(0.2))
-                        .frame(width: 64, height: 64)
-                        .overlay {
-                            Image(systemName: "photo")
-                                .foregroundStyle(.secondary)
-                        }
+        ZStack(alignment: .topLeading) {
+            Button(action: onOpen) {
+                GeometryReader { proxy in
+                    MemoryPhotoView(imagePath: photo.imagePath) {
+                        Rectangle()
+                            .fill(.secondary.opacity(0.2))
+                            .overlay {
+                                Image(systemName: "photo")
+                                    .foregroundStyle(.secondary)
+                            }
+                    }
+                    .scaledToFill()
+                    .frame(width: proxy.size.width, height: proxy.size.width)
+                    .clipped()
                 }
-                .scaledToFill()
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(photo.title)
-                        .font(.headline)
-                        .foregroundStyle(PalaceStyle.ink)
-                    Label("\(noteCount) notes", systemImage: "note.text")
-                        .font(.subheadline)
-                        .foregroundStyle(PalaceStyle.mutedInk)
-                }
-
-                Spacer()
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                onOpen()
-            }
-
-            Button {
-                onEditLocation()
-            } label: {
-                Image(systemName: photo.latitude == nil ? "mappin.and.ellipse" : "mappin")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(PalaceStyle.sage)
-                    .frame(width: 44, height: 44)
-                    .background(PalaceStyle.sage.opacity(0.14), in: RoundedRectangle(cornerRadius: 8))
-                    .accessibilityLabel(
-                        photo.latitude == nil
-                            ? String(localized: "Add Location")
-                            : String(localized: "Change Location")
-                    )
+                .aspectRatio(1, contentMode: .fit)
             }
             .buttonStyle(.plain)
+            .disabled(isEditing)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            if isEditing {
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "minus.circle.fill")
+                        .font(.title3.weight(.bold))
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, .red)
+                        .background(Circle().fill(.white))
+                }
+                .buttonStyle(.plain)
+                .offset(x: -7, y: -7)
+                .accessibilityLabel(String(localized: "Delete"))
+
+                Button(action: onMoveBackward) {
+                    Image(systemName: "chevron.left")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(PalaceStyle.ink)
+                        .frame(width: 34, height: 44)
+                        .background(.white.opacity(0.92), in: Capsule())
+                        .overlay {
+                            Capsule()
+                                .stroke(PalaceStyle.paperDeep.opacity(0.55), lineWidth: 1)
+                        }
+                }
+                .buttonStyle(.plain)
+                .disabled(!canMoveBackward)
+                .opacity(canMoveBackward ? 1 : 0.36)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .padding(.leading, 6)
+                .accessibilityLabel(String(localized: "Move Image Earlier"))
+
+                Button(action: onMoveForward) {
+                    Image(systemName: "chevron.right")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(PalaceStyle.ink)
+                        .frame(width: 34, height: 44)
+                        .background(.white.opacity(0.92), in: Capsule())
+                        .overlay {
+                            Capsule()
+                                .stroke(PalaceStyle.paperDeep.opacity(0.55), lineWidth: 1)
+                        }
+                }
+                .buttonStyle(.plain)
+                .disabled(!canMoveForward)
+                .opacity(canMoveForward ? 1 : 0.36)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                .padding(.trailing, 6)
+                .accessibilityLabel(String(localized: "Move Image Later"))
+            }
         }
-        .padding(12)
-        .background(.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(PalaceStyle.paperDeep.opacity(0.42), lineWidth: 1)
         }
+        .scaleEffect(isEditing ? 0.96 : 1)
+        .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isEditing)
+        .accessibilityLabel(String(localized: "Open photo"))
     }
 }
 
@@ -427,7 +552,7 @@ private struct AddPhotoSheet: View {
             let imagePath = try ImageStore.saveImage(image)
             let photo = MemoryPhoto(
                 setId: memorySet.id,
-                title: String(localized: "Place Photo \(nextOrderIndex + 1)"),
+                title: "",
                 imagePath: imagePath,
                 latitude: coordinate?.latitude,
                 longitude: coordinate?.longitude,
