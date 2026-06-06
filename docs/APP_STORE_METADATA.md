@@ -1,6 +1,6 @@
 # App Store Metadata Draft
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
 
 ## App Information
 
@@ -72,20 +72,24 @@ Rationale: user-created photos, notes, themes, coordinates, and preferences are 
 
 Use iPhone screenshots that show:
 
-1. Memory Map with geotagged route photos.
-2. Album list with the notebook-style visual design.
+1. Photo editor with notes placed on a familiar photo.
+2. Memory Map with geotagged route photos.
 3. Album detail with themes and ordered place photos.
-4. Photo editor with sticky, icon, number, arrow, or image notes placed on a photo.
-5. Review screen revealing answers from placed visual notes.
-6. First-launch tutorial, if a sixth screenshot is useful.
+4. Review screen revealing answers from placed visual notes.
+5. Album list with multiple personal memory routes.
 
 Suggested App Store screenshot captions:
 
-- See landmark photos on your Memory Map
-- Reuse one route with different themes
-- Place notes exactly where memory happens
-- Add icons, numbers, arrows, and image notes
-- Walk through photos and reveal answers
+- Build a Mind Palace only you could walk
+  Anchor hard facts to the rooms, streets, and landmarks your brain already knows.
+- Map the route your memory follows
+  Every photo becomes a waypoint, so studying feels like walking through a real place.
+- One place can hold every subject
+  Reuse the same route for languages, exams, certifications, and board review.
+- Reveal answers where they live
+  Test yourself by moving scene by scene through the memories you placed.
+- Keep hard subjects in their own palaces
+  Separate focused routes make serious study feel personal, visual, and ready to revisit.
 
 ## Manual App Store Connect Checklist
 

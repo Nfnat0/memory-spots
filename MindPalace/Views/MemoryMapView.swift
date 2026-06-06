@@ -154,6 +154,7 @@ struct MemoryMapView: View {
                 locationProvider.requestLocationIfPossible()
             }
             updateInitialCameraIfNeeded()
+            selectFirstVisiblePhotoForAppStoreScreenshots()
         }
         .onReceive(locationProvider.$latestCoordinate) { _ in
             guard !isLocationDisabledForUITests else {
@@ -173,6 +174,7 @@ struct MemoryMapView: View {
                 animatedSelectedPhoto = nil
             }
             updateCameraForVisiblePhotosIfNeeded()
+            selectFirstVisiblePhotoForAppStoreScreenshots()
         }
         .onChange(of: selectedPhotoId) { _, newValue in
             if newValue != nil {
@@ -222,6 +224,10 @@ struct MemoryMapView: View {
 
     private var isLocationDisabledForUITests: Bool {
         ProcessInfo.processInfo.arguments.contains("-UITestingDisableLocation")
+    }
+
+    private var isAppStoreScreenshotData: Bool {
+        ProcessInfo.processInfo.arguments.contains("-AppStoreScreenshotData")
     }
 
     private func beginSearch() {
@@ -284,6 +290,16 @@ struct MemoryMapView: View {
         cameraPosition = .region(
             region(centeredAt: coordinate(for: firstPhoto), latitudeDelta: 0.006, longitudeDelta: 0.006)
         )
+    }
+
+    private func selectFirstVisiblePhotoForAppStoreScreenshots() {
+        guard isAppStoreScreenshotData, let firstPhoto = visiblePhotos.first else {
+            return
+        }
+        selectedPhotoId = firstPhoto.id
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+            animatedSelectedPhoto = firstPhoto
+        }
     }
 
     private func centerOnUserLocation() {

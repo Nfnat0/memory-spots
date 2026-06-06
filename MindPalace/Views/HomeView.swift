@@ -30,7 +30,11 @@ struct HomeView: View {
                 }
         }
         .task {
-            SeedDataService.seedAWSExamSetIfNeeded(modelContext: modelContext)
+            if ProcessInfo.processInfo.arguments.contains("-AppStoreScreenshotData") {
+                SeedDataService.seedAppStoreScreenshotSetsIfNeeded(modelContext: modelContext)
+            } else {
+                SeedDataService.seedAWSExamSetIfNeeded(modelContext: modelContext)
+            }
         }
         .sheet(isPresented: Binding(get: { !hasCompletedTutorial && !isSkippingTutorialForUITests }, set: { _ in })) {
             TutorialView {
@@ -185,8 +189,8 @@ private struct MemorySetRow: View {
                     .font(.headline)
                     .foregroundStyle(PalaceStyle.ink)
                 HStack(spacing: 12) {
-                    Label("\(photoCount) photos", systemImage: "photo")
-                    Label("\(themeCount) themes", systemImage: "tag")
+                    Label(countText(photoCount, singular: "photo", plural: "photos"), systemImage: "photo")
+                    Label(countText(themeCount, singular: "theme", plural: "themes"), systemImage: "tag")
                 }
                 .font(.subheadline)
                 .foregroundStyle(PalaceStyle.mutedInk)
@@ -211,6 +215,10 @@ private struct MemorySetRow: View {
                 .foregroundStyle(PalaceStyle.sage)
         }
         .frame(width: 52, height: 52)
+    }
+
+    private func countText(_ count: Int, singular: String, plural: String) -> String {
+        "\(count) \(count == 1 ? singular : plural)"
     }
 }
 

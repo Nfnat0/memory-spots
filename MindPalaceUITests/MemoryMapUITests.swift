@@ -27,8 +27,8 @@ final class MemoryMapUITests: XCTestCase {
         XCTAssertTrue(app.keyboards.element.waitForExistence(timeout: 3))
         XCTAssertFalse(app.buttons["Done"].exists)
 
-        app.typeText("Room")
-        XCTAssertTrue(app.staticTexts["My Room & Park"].waitForExistence(timeout: 3))
+        app.typeText("Cloud")
+        XCTAssertTrue(app.staticTexts["Cloud Architect Exam Palace"].waitForExistence(timeout: 3))
     }
 
     private func launchApp() -> XCUIApplication {
