@@ -7,7 +7,7 @@ final class ScreenshotAutomationTests: XCTestCase {
 
     func testCaptureAppStoreScreenshots() throws {
         let editorApp = launchApp()
-        openAlbum(named: "Cloud Architect Exam Palace", in: editorApp)
+        openAlbum(named: "Gotanda Station East Route", in: editorApp)
         openPhoto(named: "Street Wires", in: editorApp)
         XCTAssertTrue(
             editorApp.descendants(matching: .any)["Sticky Note: VPC"].waitForExistence(timeout: 10),
@@ -21,19 +21,18 @@ final class ScreenshotAutomationTests: XCTestCase {
         editorApp.terminate()
 
         let mapApp = launchApp()
-        openMapFilter(named: "Cloud Architect Exam Palace", in: mapApp)
-        XCTAssertTrue(mapApp.staticTexts["Street Wires"].waitForExistence(timeout: 10))
+        openMapFilter(named: "Gotanda Station East Route", in: mapApp)
         captureScreenshot(named: "02-memory-map.png")
         mapApp.terminate()
 
         let reviewApp = launchApp()
-        openAlbum(named: "My Spanish Grammar Palace", in: reviewApp)
-        XCTAssertTrue(reviewApp.staticTexts["Daruma Room"].waitForExistence(timeout: 10))
+        openAlbum(named: "Daruma Room Route", in: reviewApp)
+        XCTAssertTrue(reviewApp.buttons["Open photo"].firstMatch.waitForExistence(timeout: 10))
         captureScreenshot(named: "03-route-detail.png")
 
-        let reviewButton = reviewApp.buttons["Review Notes"]
-        XCTAssertTrue(reviewButton.waitForExistence(timeout: 10), "Review Notes button should exist")
-        reviewButton.tap()
+        let reviewPhoto = reviewApp.buttons["Open photo"].firstMatch
+        XCTAssertTrue(reviewPhoto.waitForExistence(timeout: 10), "Review photo tile should exist")
+        reviewPhoto.tap()
 
         let reviewNote = reviewApp.descendants(matching: .any)["Sticky Note: ser vs estar"].firstMatch
         XCTAssertTrue(reviewNote.waitForExistence(timeout: 10), "The first review note should exist.")
@@ -47,9 +46,9 @@ final class ScreenshotAutomationTests: XCTestCase {
         reviewApp.navigationBars.buttons.element(boundBy: 0).tap()
         reviewApp.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(reviewApp.navigationBars["Albums"].waitForExistence(timeout: 10))
-        XCTAssertTrue(reviewApp.staticTexts["Cloud Architect Exam Palace"].exists)
-        XCTAssertTrue(reviewApp.staticTexts["Data Science Finals Palace"].exists)
-        XCTAssertTrue(reviewApp.staticTexts["Medical Board Review Palace"].exists)
+        XCTAssertTrue(reviewApp.staticTexts["Gotanda Station East Route"].exists)
+        XCTAssertTrue(reviewApp.staticTexts["Elephant Plaza Route"].exists)
+        XCTAssertTrue(reviewApp.staticTexts["Indoor Study Route"].exists)
         captureScreenshot(named: "05-albums.png")
     }
 
@@ -79,9 +78,9 @@ final class ScreenshotAutomationTests: XCTestCase {
     }
 
     private func openPhoto(named photoName: String, in app: XCUIApplication) {
-        let photoRow = app.staticTexts[photoName]
-        XCTAssertTrue(photoRow.waitForExistence(timeout: 10), "\(photoName) row should exist")
-        photoRow.tap()
+        let photoTile = app.buttons["Open photo"].firstMatch
+        XCTAssertTrue(photoTile.waitForExistence(timeout: 10), "\(photoName) tile should exist")
+        photoTile.tap()
     }
 
     private func openMapFilter(named filterName: String, in app: XCUIApplication) {

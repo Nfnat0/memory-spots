@@ -159,8 +159,8 @@ private struct SeedItem {
 
 private let defaultStudySeed = SeedSet(
     stableId: "default-seed-set",
-    name: "Cloud Architect Exam Palace",
-    detail: "A sample certification route for anchoring cloud architecture concepts to city landmarks.",
+    name: "Gotanda Station East Route",
+    detail: "A sample city route for anchoring study notes to familiar landmarks.",
     themes: [
         SeedTheme(name: "SAA-C03 Review", colorName: "blue")
     ],
@@ -257,8 +257,8 @@ private let defaultStudySeed = SeedSet(
 private let appStoreScreenshotSeeds: [SeedSet] = [
     SeedSet(
         stableId: "app-store-spanish-grammar-palace",
-        name: "My Spanish Grammar Palace",
-        detail: "A personal route for turning everyday rooms into Spanish grammar anchors.",
+        name: "Daruma Room Route",
+        detail: "A personal route through familiar rooms that can hold different study themes.",
         themes: [
             SeedTheme(name: "Spanish Grammar", colorName: "yellow"),
             SeedTheme(name: "Vocab Recall", colorName: "green"),
@@ -288,6 +288,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         rotation: -4,
                         x: 0.31,
                         y: 0.38
+                    ),
+                    SeedItem(
+                        themeName: "Spanish Grammar",
+                        frontText: "question words",
+                        backText: "Que, quien, cuando, donde, por que, and como all carry accents in questions.",
+                        colorName: "pink",
+                        rotation: 5,
+                        x: 0.72,
+                        y: 0.66
                     ),
                     SeedItem(
                         themeName: "Vocab Recall",
@@ -326,6 +335,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         y: 0.62
                     ),
                     SeedItem(
+                        themeName: "Spanish Grammar",
+                        frontText: "por / para",
+                        backText: "Por often explains cause or path; para points to purpose or destination.",
+                        colorName: "blue",
+                        rotation: 4,
+                        x: 0.70,
+                        y: 0.68
+                    ),
+                    SeedItem(
                         themeName: "Speaking",
                         frontText: "opinion opener",
                         backText: "Use 'Desde mi punto de vista...' to start a spoken answer.",
@@ -358,6 +376,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         rotation: 5,
                         x: 0.37,
                         y: 0.59
+                    ),
+                    SeedItem(
+                        themeName: "Spanish Grammar",
+                        frontText: "imperfect",
+                        backText: "Use imperfect for ongoing background, habits, and descriptions.",
+                        colorName: "green",
+                        rotation: -3,
+                        x: 0.72,
+                        y: 0.58
                     )
                 ]
             )
@@ -365,8 +392,8 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
     ),
     SeedSet(
         stableId: "app-store-cloud-architect-palace",
-        name: "Cloud Architect Exam Palace",
-        detail: "Certification notes placed along a city route with memorable landmarks.",
+        name: "Gotanda Station East Route",
+        detail: "A city walk with memorable landmarks that can hold different study themes.",
         themes: [
             SeedTheme(name: "SAA-C03 Review", colorName: "blue")
         ],
@@ -429,6 +456,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         iconName: "network",
                         x: 0.74,
                         y: 0.34
+                    ),
+                    SeedItem(
+                        themeName: "SAA-C03 Review",
+                        frontText: "S3 policy",
+                        backText: "Bucket policies attach resource permissions directly to an S3 bucket.",
+                        colorName: "blue",
+                        rotation: 4,
+                        x: 0.33,
+                        y: 0.68
                     )
                 ]
             ),
@@ -454,6 +490,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         colorName: "blue",
                         x: 0.63,
                         y: 0.67
+                    ),
+                    SeedItem(
+                        themeName: "SAA-C03 Review",
+                        frontText: "multi-AZ",
+                        backText: "Run across Availability Zones to survive a zone outage.",
+                        colorName: "green",
+                        rotation: -3,
+                        x: 0.32,
+                        y: 0.64
                     )
                 ]
             )
@@ -461,8 +506,8 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
     ),
     SeedSet(
         stableId: "app-store-data-science-palace",
-        name: "Data Science Finals Palace",
-        detail: "Statistics and machine learning concepts anchored to public landmarks.",
+        name: "Elephant Plaza Route",
+        detail: "A landmark route that can carry any theme you want to review.",
         themes: [
             SeedTheme(name: "ML Finals", colorName: "green")
         ],
@@ -489,6 +534,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         colorName: "yellow",
                         x: 0.68,
                         y: 0.60
+                    ),
+                    SeedItem(
+                        themeName: "ML Finals",
+                        frontText: "train split",
+                        backText: "Keep validation data separate so it can expose generalization errors.",
+                        colorName: "pink",
+                        rotation: -4,
+                        x: 0.29,
+                        y: 0.64
                     )
                 ]
             ),
@@ -514,6 +568,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         colorName: "pink",
                         x: 0.38,
                         y: 0.67
+                    ),
+                    SeedItem(
+                        themeName: "ML Finals",
+                        frontText: "null",
+                        backText: "The null hypothesis is the baseline claim tested against the data.",
+                        colorName: "green",
+                        rotation: 3,
+                        x: 0.72,
+                        y: 0.55
                     )
                 ]
             ),
@@ -531,6 +594,23 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         colorName: "yellow",
                         x: 0.51,
                         y: 0.48
+                    ),
+                    SeedItem(
+                        themeName: "ML Finals",
+                        frontText: "precision",
+                        backText: "Precision asks how many predicted positives were actually positive.",
+                        colorName: "blue",
+                        x: 0.31,
+                        y: 0.62
+                    ),
+                    SeedItem(
+                        themeName: "ML Finals",
+                        frontText: "recall",
+                        backText: "Recall asks how many actual positives the model found.",
+                        colorName: "pink",
+                        rotation: -5,
+                        x: 0.70,
+                        y: 0.34
                     )
                 ]
             )
@@ -538,8 +618,8 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
     ),
     SeedSet(
         stableId: "app-store-medical-board-palace",
-        name: "Medical Board Review Palace",
-        detail: "High-yield physiology and pharmacology notes placed on tactile scenes.",
+        name: "Indoor Study Route",
+        detail: "A compact indoor route that keeps review notes attached to real scenes.",
         themes: [
             SeedTheme(name: "Board Review", colorName: "pink")
         ],
@@ -566,6 +646,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         colorName: "blue",
                         x: 0.69,
                         y: 0.36
+                    ),
+                    SeedItem(
+                        themeName: "Board Review",
+                        frontText: "insulin",
+                        backText: "Insulin moves glucose into muscle and fat and promotes storage.",
+                        colorName: "green",
+                        rotation: 4,
+                        x: 0.30,
+                        y: 0.35
                     )
                 ]
             ),
@@ -591,6 +680,15 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         colorName: "green",
                         x: 0.63,
                         y: 0.63
+                    ),
+                    SeedItem(
+                        themeName: "Board Review",
+                        frontText: "preload",
+                        backText: "Preload reflects ventricular stretch before contraction.",
+                        colorName: "pink",
+                        rotation: -4,
+                        x: 0.28,
+                        y: 0.62
                     )
                 ]
             ),
@@ -608,6 +706,23 @@ private let appStoreScreenshotSeeds: [SeedSet] = [
                         colorName: "yellow",
                         x: 0.47,
                         y: 0.42
+                    ),
+                    SeedItem(
+                        themeName: "Board Review",
+                        frontText: "ACE inhibitors",
+                        backText: "Reduce angiotensin II and aldosterone; watch for cough and hyperkalemia.",
+                        colorName: "blue",
+                        x: 0.29,
+                        y: 0.62
+                    ),
+                    SeedItem(
+                        themeName: "Board Review",
+                        frontText: "aldosterone",
+                        backText: "Retains sodium and water while increasing potassium excretion.",
+                        colorName: "green",
+                        rotation: 5,
+                        x: 0.70,
+                        y: 0.58
                     )
                 ]
             )

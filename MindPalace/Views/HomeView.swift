@@ -14,6 +14,7 @@ struct HomeView: View {
     @State private var renamingSet: MemorySet?
     @State private var deletingSet: MemorySet?
     @State private var openingSet: MemorySet?
+    @State private var activeHelp: HelpTopic?
     @AppStorage("hasCompletedTutorial") private var hasCompletedTutorial = false
 
     var body: some View {
@@ -116,13 +117,19 @@ struct HomeView: View {
                 MemorySetDetailView(memorySet: memorySet)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    HelpToolbarButton(topic: .albums, activeHelp: $activeHelp)
+
                     Button {
                         isAddingSet = true
                     } label: {
                         Label("Add Album", systemImage: "plus")
                     }
                 }
+            }
+            .sheet(item: $activeHelp) { topic in
+                HelpSheetView(topic: topic)
+                    .presentationDetents([.large])
             }
             .sheet(isPresented: $isAddingSet) {
                 SetNameEditor(title: String(localized: "Create Album"), initialName: "") { name in

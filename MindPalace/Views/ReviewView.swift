@@ -13,6 +13,7 @@ struct ReviewView: View {
 
     @State private var currentIndex: Int
     @State private var selectedThemeId: UUID
+    @State private var activeHelp: HelpTopic?
 
     init(memorySet: MemorySet, theme: MemoryTheme, initialPhoto: MemoryPhoto? = nil) {
         self.memorySet = memorySet
@@ -99,8 +100,10 @@ struct ReviewView: View {
             ToolbarItem(placement: .principal) {
                 ThemePickerMenu(themes: setThemes, selectedThemeId: $selectedThemeId)
             }
-            if let currentPhoto, let selectedTheme {
-                ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                HelpToolbarButton(topic: .review, activeHelp: $activeHelp)
+
+                if let currentPhoto, let selectedTheme {
                     NavigationLink {
                         PhotoEditorView(photo: currentPhoto, theme: selectedTheme, photos: orderedPhotos)
                     } label: {
@@ -108,6 +111,10 @@ struct ReviewView: View {
                     }
                 }
             }
+        }
+        .sheet(item: $activeHelp) { topic in
+            HelpSheetView(topic: topic)
+                .presentationDetents([.large])
         }
     }
 

@@ -22,6 +22,7 @@ struct MemorySetDetailView: View {
     @State private var deletingTheme: MemoryTheme?
     @State private var deletingPhoto: MemoryPhoto?
     @State private var openingPhoto: MemoryPhoto?
+    @State private var activeHelp: HelpTopic?
 
     private var setPhotos: [MemoryPhoto] {
         photos
@@ -51,6 +52,8 @@ struct MemorySetDetailView: View {
         .navigationTitle(memorySet.name)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
+                HelpToolbarButton(topic: .memorySet, activeHelp: $activeHelp)
+
                 Button(isEditingAlbum ? "Done" : "Edit") {
                     withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
                         isEditingAlbum.toggle()
@@ -65,6 +68,10 @@ struct MemorySetDetailView: View {
                     }
                 }
             }
+        }
+        .sheet(item: $activeHelp) { topic in
+            HelpSheetView(topic: topic)
+                .presentationDetents([.large])
         }
         .onAppear {
             ensureThemeSelection()
@@ -541,7 +548,7 @@ private struct AddPhotoSheet: View {
                 errorMessage = String(localized: "Failed to load image.")
                 return
             }
-            save(image, coordinate: libraryCoordinate(for: item))
+            save(image, coordinate: await libraryCoordinate(for: item, imageData: data))
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -568,11 +575,34 @@ private struct AddPhotoSheet: View {
         }
     }
 
-    private func libraryCoordinate(for item: PhotosPickerItem) -> CLLocationCoordinate2D? {
+    private func libraryCoordinate(for item: PhotosPickerItem, imageData: Data) async -> CLLocationCoordinate2D? {
+        if let coordinate = PhotoLocationMetadata.coordinate(in: imageData) {
+            return coordinate
+        }
+        return await photoLibraryCoordinate(for: item)
+    }
+
+    private func photoLibraryCoordinate(for item: PhotosPickerItem) async -> CLLocationCoordinate2D? {
         guard let identifier = item.itemIdentifier else {
+            return nil
+        }
+        let status = await photoLibraryAuthorizationStatus()
+        guard status == .authorized || status == .limited else {
             return nil
         }
         let result = PHAsset.fetchAssets(withLocalIdentifiers: [identifier], options: nil)
         return result.firstObject?.location?.coordinate
+    }
+
+    private func photoLibraryAuthorizationStatus() async -> PHAuthorizationStatus {
+        let currentStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        guard currentStatus == .notDetermined else {
+            return currentStatus
+        }
+        return await withCheckedContinuation { continuation in
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
+                continuation.resume(returning: status)
+            }
+        }
     }
 }

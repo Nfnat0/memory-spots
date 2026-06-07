@@ -19,6 +19,7 @@ struct PhotoEditorView: View {
     @State private var isImagePickerPresented = false
     @State private var editingLocationPhoto: MemoryPhoto?
     @State private var selectedImageItem: PhotosPickerItem?
+    @State private var activeHelp: HelpTopic?
 
     init(photo: MemoryPhoto, theme: MemoryTheme, photos: [MemoryPhoto]? = nil) {
         self.photo = photo
@@ -107,7 +108,9 @@ struct PhotoEditorView: View {
             ToolbarItem(placement: .principal) {
                 ThemePickerMenu(themes: setThemes, selectedThemeId: $selectedThemeId)
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                HelpToolbarButton(topic: .photoEditor, activeHelp: $activeHelp)
+
                 Button {
                     editingLocationPhoto = currentPhoto
                 } label: {
@@ -180,6 +183,10 @@ struct PhotoEditorView: View {
         }
         .sheet(item: $editingLocationPhoto) { photo in
             LocationEditorView(photo: photo)
+        }
+        .sheet(item: $activeHelp) { topic in
+            HelpSheetView(topic: topic)
+                .presentationDetents([.large])
         }
     }
 

@@ -213,7 +213,7 @@ struct TutorialView: View {
     }
 
     private var tutorialImage: UIImage {
-        let resourceName = "240C63AE-B4CF-4BE2-90BE-D450878B809F"
+        let resourceName = "4B9A5510-F192-4488-9974-4095B63BC0D2"
         if let image = UIImage(named: resourceName) {
             return image
         }
