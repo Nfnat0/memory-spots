@@ -4,6 +4,7 @@ import PhotosUI
 import SwiftData
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 struct MemorySetDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -17,6 +18,7 @@ struct MemorySetDetailView: View {
     @State private var selectedThemeId: UUID?
     @State private var isAddingTheme = false
     @State private var isAddingPhoto = false
+    @State private var isImportingCSV = false
     @State private var isEditingAlbum = false
     @State private var renamingTheme: MemoryTheme?
     @State private var deletingTheme: MemoryTheme?
@@ -62,6 +64,13 @@ struct MemorySetDetailView: View {
 
                 if !isEditingAlbum {
                     Button {
+                        isImportingCSV = true
+                    } label: {
+                        Label("Import CSV", systemImage: "doc.badge.plus")
+                    }
+                    .disabled(selectedTheme == nil || setPhotos.isEmpty)
+
+                    Button {
                         isAddingPhoto = true
                     } label: {
                         Label("Add Photo", systemImage: "photo.badge.plus")
@@ -95,6 +104,14 @@ struct MemorySetDetailView: View {
         .sheet(isPresented: $isAddingPhoto) {
             AddPhotoSheet(memorySet: memorySet, nextOrderIndex: setPhotos.count)
                 .presentationDetents([.large])
+        }
+        .sheet(isPresented: $isImportingCSV) {
+            if let selectedTheme {
+                CSVImportSheet(memorySet: memorySet, theme: selectedTheme, photos: setPhotos)
+                    .presentationDetents([.large])
+            } else {
+                ContentUnavailableView("No Themes", systemImage: "tag")
+            }
         }
         .sheet(item: $renamingTheme) { theme in
             SetNameEditor(title: String(localized: "Rename"), initialName: theme.name) { name in
@@ -604,5 +621,230 @@ private struct AddPhotoSheet: View {
                 continuation.resume(returning: status)
             }
         }
+    }
+}
+
+private struct CSVImportSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    let memorySet: MemorySet
+    let theme: MemoryTheme
+    let photos: [MemoryPhoto]
+
+    @Query private var items: [MemoryItem]
+
+    @State private var itemsPerPhoto = 3
+    @State private var rows: [CSVMemoryItemImportService.Row] = []
+    @State private var assignments: [CSVMemoryItemImportService.Assignment] = []
+    @State private var selectedFileName: String?
+    @State private var errorMessage: String?
+    @State private var isFileImporterPresented = false
+    @State private var templateFileURL: URL?
+
+    private let importService = CSVMemoryItemImportService()
+
+    private var themeItems: [MemoryItem] {
+        items.filter { $0.themeId == theme.id }
+    }
+
+    private var requiredPhotoCount: Int {
+        guard !rows.isEmpty else {
+            return 0
+        }
+        return Int(ceil(Double(rows.count) / Double(itemsPerPhoto)))
+    }
+
+    private var canImport: Bool {
+        !assignments.isEmpty && errorMessage == nil
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Target") {
+                    LabeledContent("Theme", value: theme.name)
+                    LabeledContent("Photos", value: "\(photos.count)")
+                    if let selectedFileName {
+                        LabeledContent("CSV", value: selectedFileName)
+                    }
+                }
+
+                Section("Placement") {
+                    Stepper(value: $itemsPerPhoto, in: 1...12) {
+                        LabeledContent("Items per Photo", value: "\(itemsPerPhoto)")
+                    }
+                }
+
+                Section {
+                    Button {
+                        isFileImporterPresented = true
+                    } label: {
+                        Label("Choose CSV File", systemImage: "doc.badge.plus")
+                    }
+
+                    if let templateFileURL {
+                        ShareLink(item: templateFileURL) {
+                            Label("Download CSV Template", systemImage: "square.and.arrow.down")
+                        }
+                    } else {
+                        Button {
+                            prepareTemplateFile()
+                        } label: {
+                            Label("Prepare CSV Template", systemImage: "square.and.arrow.down")
+                        }
+                    }
+                }
+
+                if !rows.isEmpty {
+                    Section("Confirmation") {
+                        LabeledContent("CSV Rows", value: "\(rows.count)")
+                        LabeledContent("Required Photos", value: "\(requiredPhotoCount)")
+                        LabeledContent("Existing Items", value: "\(themeItems.count)")
+
+                        if themeItems.isEmpty {
+                            Text("Items will be added to the selected theme.")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Existing items will be preserved. Imported items will be appended after them.")
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(NotebookBackground())
+            .navigationTitle("Import CSV")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Import") {
+                        importItems()
+                    }
+                    .disabled(!canImport)
+                }
+            }
+            .fileImporter(
+                isPresented: $isFileImporterPresented,
+                allowedContentTypes: csvContentTypes,
+                allowsMultipleSelection: false
+            ) { result in
+                handleFileImport(result)
+            }
+            .onChange(of: itemsPerPhoto) {
+                refreshAssignments()
+            }
+            .onAppear {
+                prepareTemplateFile()
+            }
+        }
+    }
+
+    private var csvContentTypes: [UTType] {
+        if let csvType = UTType(filenameExtension: "csv") {
+            return [csvType, .commaSeparatedText, .plainText]
+        }
+        return [.commaSeparatedText, .plainText]
+    }
+
+    private func handleFileImport(_ result: Result<[URL], Error>) {
+        do {
+            guard let url = try result.get().first else {
+                return
+            }
+
+            let canAccess = url.startAccessingSecurityScopedResource()
+            defer {
+                if canAccess {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+
+            let data = try Data(contentsOf: url)
+            rows = try importService.parse(data: data)
+            selectedFileName = url.lastPathComponent
+            refreshAssignments()
+        } catch {
+            rows = []
+            assignments = []
+            selectedFileName = nil
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func prepareTemplateFile() {
+        do {
+            let fileURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent(CSVMemoryItemImportService.templateFileName)
+            try importService.templateData().write(to: fileURL, options: .atomic)
+            templateFileURL = fileURL
+        } catch {
+            templateFileURL = nil
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func refreshAssignments() {
+        do {
+            assignments = try importService.assign(
+                rows: rows,
+                photos: photos.map { CSVMemoryItemImportService.PhotoReference(id: $0.id, orderIndex: $0.orderIndex) },
+                itemsPerPhoto: itemsPerPhoto
+            )
+            errorMessage = nil
+        } catch {
+            assignments = []
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func importItems() {
+        let photosById = Dictionary(uniqueKeysWithValues: photos.map { ($0.id, $0) })
+        var nextOrderIndexByPhotoId = Dictionary(
+            grouping: themeItems,
+            by: \.photoId
+        ).mapValues { photoItems in
+            photoItems.map(\.orderIndex).max().map { $0 + 1 } ?? 0
+        }
+
+        for assignment in assignments {
+            guard let photo = photosById[assignment.photoId] else {
+                continue
+            }
+
+            let orderIndex = nextOrderIndexByPhotoId[photo.id, default: 0]
+            nextOrderIndexByPhotoId[photo.id] = orderIndex + 1
+
+            let item = MemoryItem(
+                photoId: photo.id,
+                themeId: theme.id,
+                type: .stickyText,
+                frontText: assignment.row.front,
+                backText: assignment.row.back,
+                colorName: "yellow",
+                x: assignment.x,
+                y: assignment.y,
+                orderIndex: orderIndex
+            )
+            item.photo = photo
+            item.theme = theme
+            modelContext.insert(item)
+        }
+
+        memorySet.updatedAt = Date()
+        try? modelContext.save()
+        dismiss()
     }
 }
