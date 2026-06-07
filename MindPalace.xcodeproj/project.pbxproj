@@ -74,7 +74,7 @@
 		14F7D7FB9D12E1C165784453 /* GeometryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtils.swift; sourceTree = "<group>"; };
 		15384D8B8F9257A96D4F0634 /* MemoryMapUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapUITests.swift; sourceTree = "<group>"; };
 		1C7254FA0787EA207C87E000 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20328AB420EA87A3F11288DB /* ImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStore.swift; sourceTree = "<group>"; };
 		24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataService.swift; sourceTree = "<group>"; };
 		29A661D21CEBD2F9D27F8127 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -101,7 +101,7 @@
 		AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialView.swift; sourceTree = "<group>"; };
 		ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEditorView.swift; sourceTree = "<group>"; };
 		AD9FCFA18E5FD9240D12A651 /* FEC8D736-6AB6-46A2-8727-EFEC90FF6C83.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "FEC8D736-6AB6-46A2-8727-EFEC90FF6C83.jpeg"; sourceTree = "<group>"; };
-		AFC3207809A4D16D2C368131 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AFC3207809A4D16D2C368131 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BA729BF3D594D7189D844D64 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		BD703F90EBF77D285585A7CC /* MemoryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapView.swift; sourceTree = "<group>"; };
 		BFC0FB2D5A2D5FC540660034 /* 4B9A5510-F192-4488-9974-4095B63BC0D2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "4B9A5510-F192-4488-9974-4095B63BC0D2.png"; sourceTree = "<group>"; };
@@ -564,7 +564,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspots;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -643,7 +643,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.nfnat0.memoryspots;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};

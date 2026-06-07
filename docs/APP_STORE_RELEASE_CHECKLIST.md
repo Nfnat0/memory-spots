@@ -14,10 +14,11 @@ Last updated: 2026-06-07
 - Localized Info.plist strings: `MindPalace/InfoPlist.xcstrings`
 - Localized UI strings: `MindPalace/Localizable.xcstrings`
 - Public support artwork copied into `docs/assets/`
+- iPhone App Store screenshots: `screenshots/app-store/captioned/*.png` at 1284 x 2778
 
 ## GitHub Pages Setup
 
-Expected public URLs after GitHub Pages is enabled:
+Verified public URLs:
 
 - `https://nfnat0.github.io/memory-spots/`
 - `https://nfnat0.github.io/memory-spots/support.html`
@@ -37,6 +38,20 @@ Fallback setup:
 - If not using GitHub Actions, configure Pages to publish from the `docs` folder on the default branch.
 
 ## Local Verification
+
+Metadata length checks:
+
+- App name: within 30 characters.
+- Subtitle: within 30 characters.
+- Promotional text: within 170 characters.
+- Description: within 4,000 characters.
+- Keywords: within 100 characters.
+- What's New: within 4,000 characters.
+
+Screenshot status:
+
+- iPhone 6.5-inch screenshots are prepared at 1284 x 2778.
+- The app currently targets iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`), so prepare iPad screenshots before submission or intentionally switch the app to iPhone-only.
 
 For docs-only changes, verify the static site locally:
 

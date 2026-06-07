@@ -221,8 +221,8 @@ private struct MemorySetRow: View {
                     .font(.headline)
                     .foregroundStyle(PalaceStyle.ink)
                 HStack(spacing: 12) {
-                    Label(countText(photoCount, singular: "photo", plural: "photos"), systemImage: "photo")
-                    Label(countText(themeCount, singular: "theme", plural: "themes"), systemImage: "tag")
+                    Label(countText(photoCount, singularKey: "%lld photo", pluralKey: "%lld photos"), systemImage: "photo")
+                    Label(countText(themeCount, singularKey: "%lld theme", pluralKey: "%lld themes"), systemImage: "tag")
                 }
                 .font(.subheadline)
                 .foregroundStyle(PalaceStyle.mutedInk)
@@ -249,8 +249,13 @@ private struct MemorySetRow: View {
         .frame(width: 52, height: 52)
     }
 
-    private func countText(_ count: Int, singular: String, plural: String) -> String {
-        "\(count) \(count == 1 ? singular : plural)"
+    private func countText(_ count: Int, singularKey: String, pluralKey: String) -> String {
+        let key = count == 1 ? singularKey : pluralKey
+        return String(
+            format: NSLocalizedString(key, comment: "Count label on an album card"),
+            locale: .current,
+            count
+        )
     }
 }
 
