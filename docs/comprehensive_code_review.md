@@ -1,6 +1,6 @@
 # Memory Spots: Code & UX Readiness Review
 
-Last updated: 2026-06-05
+Last updated: 2026-06-07
 
 This review reflects the current MVP implementation of **Memory Spots** after the map, global seed data, visual notes, local image pipeline, and GitHub Pages support pages were added.
 
@@ -29,7 +29,7 @@ This review reflects the current MVP implementation of **Memory Spots** after th
 
 ### Localization QA
 
-String catalogs are present, but localized UI still needs a full simulator pass. Pay special attention to long Japanese strings in chips, bottom bars, sheets, and map overlay controls.
+String catalogs now include English, Japanese, German, French, Italian, Spanish, Korean, and Hindi. Localized UI still needs a full simulator pass, especially for long German and Hindi strings in chips, bottom bars, sheets, and map overlay controls.
 
 ### Accessibility QA
 
@@ -47,7 +47,7 @@ The Pages workflow exists, but the public URLs must be checked after pushing to 
 | Legal | Support URL | Prepared | Publish GitHub Pages and verify `support.html`. |
 | Legal | Privacy Policy URL | Prepared | Publish GitHub Pages and verify `privacy.html`. |
 | Privacy | Privacy Manifest | Done | Re-check if new APIs or SDKs are added. |
-| Localization | Info.plist Prompts | Done | Simulator QA in English and Japanese. |
+| Localization | Info.plist Prompts | Done | Simulator QA in priority locales: Japanese, German, French, Korean, and Hindi. |
 | Data Safety | Local Photo Storage | Done | Keep image binaries out of SwiftData. |
 | Data Safety | iCloud Backup Exclusion | Done | Re-test if image directory changes. |
 | Review Prep | No Login Required | Done | Mention local-only behavior in App Review notes. |
@@ -56,7 +56,7 @@ The Pages workflow exists, but the public URLs must be checked after pushing to 
 
 1. Publish and verify the GitHub Pages support site.
 2. Run a simulator build and first-launch smoke test.
-3. Check English and Japanese UI for clipped text.
+3. Check priority localized UI for clipped text.
 4. Decide whether review result recording belongs in 1.0.
 5. Capture App Store screenshots from the current map-first MVP.
 

@@ -1,5 +1,15 @@
 name: MindPalace
 options:
+  developmentLanguage: en
+  knownRegions:
+    - en
+    - ja
+    - de
+    - fr
+    - it
+    - es
+    - ko
+    - hi
   bundleIdPrefix: com.nfnat0
   deploymentTarget:
     iOS: "17.0"

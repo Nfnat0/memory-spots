@@ -1,6 +1,6 @@
 # App Store Release Checklist
 
-Last updated: 2026-06-05
+Last updated: 2026-06-07
 
 ## Prepared In This Repository
 
@@ -12,6 +12,7 @@ Last updated: 2026-06-05
 - Privacy manifest: `MindPalace/PrivacyInfo.xcprivacy`
 - App icon asset: `MindPalace/Assets.xcassets/AppIcon.appiconset/icon-1024.png`
 - Localized Info.plist strings: `MindPalace/InfoPlist.xcstrings`
+- Localized UI strings: `MindPalace/Localizable.xcstrings`
 - Public support artwork copied into `docs/assets/`
 
 ## GitHub Pages Setup
@@ -69,7 +70,7 @@ For release readiness, also launch on a simulator and check:
 - Theme chips switch note content.
 - Photo library import still works.
 - Camera flow still works on a physical device.
-- Location permission copy is understandable in Japanese and English.
+- Permission copy is understandable in priority locales: Japanese, German, French, Korean, and Hindi.
 - Photos without locations can be saved and edited later.
 - Photo editor supports sticky text, image, icon, number, and arrow notes.
 - Review screen reveals note answers.
