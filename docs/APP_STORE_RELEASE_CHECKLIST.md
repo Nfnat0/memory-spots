@@ -51,6 +51,7 @@ Metadata length checks:
 Screenshot status:
 
 - iPhone 6.5-inch screenshots are prepared at 1284 x 2778.
+- Captioned screenshots can be regenerated with `python3 scripts/render_app_store_screenshots.py --repo .`.
 - The app currently targets iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`), so prepare iPad screenshots before submission or intentionally switch the app to iPhone-only.
 
 For docs-only changes, verify the static site locally:

@@ -23,6 +23,10 @@ settings:
     SWIFT_VERSION: 5.9
     MARKETING_VERSION: 1.0
     CURRENT_PROJECT_VERSION: 1
+packages:
+  CoreXLSX:
+    url: https://github.com/CoreOffice/CoreXLSX.git
+    from: 0.14.2
 targets:
   MindPalace:
     type: application
@@ -32,6 +36,8 @@ targets:
       - MindPalace
     resources:
       - MindPalace/Resources
+    dependencies:
+      - package: CoreXLSX
     info:
       path: MindPalace/Info.plist
       properties:
@@ -53,6 +59,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.nfnat0.memoryspots
+        TARGETED_DEVICE_FAMILY: 1
   MindPalaceTests:
     type: bundle.unit-test
     platform: iOS

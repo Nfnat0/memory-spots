@@ -66,7 +66,7 @@ struct MemorySetDetailView: View {
                     Button {
                         isImportingCSV = true
                     } label: {
-                        Label("Import CSV", systemImage: "doc.badge.plus")
+                        Label("Import File", systemImage: "doc.badge.plus")
                     }
                     .disabled(selectedTheme == nil || setPhotos.isEmpty)
 
@@ -640,6 +640,7 @@ private struct CSVImportSheet: View {
     @State private var selectedFileName: String?
     @State private var errorMessage: String?
     @State private var isFileImporterPresented = false
+    @State private var isImporting = false
     @State private var templateFileURL: URL?
 
     private let importService = CSVMemoryItemImportService()
@@ -656,7 +657,7 @@ private struct CSVImportSheet: View {
     }
 
     private var canImport: Bool {
-        !assignments.isEmpty && errorMessage == nil
+        !assignments.isEmpty && errorMessage == nil && !isImporting
     }
 
     var body: some View {
@@ -666,7 +667,7 @@ private struct CSVImportSheet: View {
                     LabeledContent("Theme", value: theme.name)
                     LabeledContent("Photos", value: "\(photos.count)")
                     if let selectedFileName {
-                        LabeledContent("CSV", value: selectedFileName)
+                        LabeledContent("File", value: selectedFileName)
                     }
                 }
 
@@ -680,7 +681,7 @@ private struct CSVImportSheet: View {
                     Button {
                         isFileImporterPresented = true
                     } label: {
-                        Label("Choose CSV File", systemImage: "doc.badge.plus")
+                        Label("Choose File", systemImage: "doc.badge.plus")
                     }
 
                     if let templateFileURL {
@@ -698,7 +699,7 @@ private struct CSVImportSheet: View {
 
                 if !rows.isEmpty {
                     Section("Confirmation") {
-                        LabeledContent("CSV Rows", value: "\(rows.count)")
+                        LabeledContent("Rows", value: "\(rows.count)")
                         LabeledContent("Required Photos", value: "\(requiredPhotoCount)")
                         LabeledContent("Existing Items", value: "\(themeItems.count)")
 
@@ -721,7 +722,7 @@ private struct CSVImportSheet: View {
             }
             .scrollContentBackground(.hidden)
             .background(NotebookBackground())
-            .navigationTitle("Import CSV")
+            .navigationTitle("Import File")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
@@ -730,7 +731,7 @@ private struct CSVImportSheet: View {
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Import") {
+                    Button(isImporting ? String(localized: "Importing...") : String(localized: "Import")) {
                         importItems()
                     }
                     .disabled(!canImport)
@@ -738,7 +739,7 @@ private struct CSVImportSheet: View {
             }
             .fileImporter(
                 isPresented: $isFileImporterPresented,
-                allowedContentTypes: csvContentTypes,
+                allowedContentTypes: importContentTypes,
                 allowsMultipleSelection: false
             ) { result in
                 handleFileImport(result)
@@ -752,11 +753,18 @@ private struct CSVImportSheet: View {
         }
     }
 
-    private var csvContentTypes: [UTType] {
-        if let csvType = UTType(filenameExtension: "csv") {
-            return [csvType, .commaSeparatedText, .plainText]
-        }
-        return [.commaSeparatedText, .plainText]
+    private var importContentTypes: [UTType] {
+        [
+            UTType(filenameExtension: "csv"),
+            UTType(filenameExtension: "xlsx"),
+            UTType(filenameExtension: "numbers"),
+            UTType("org.openxmlformats.spreadsheetml.sheet"),
+            UTType("com.apple.iwork.numbers.numbers"),
+            .commaSeparatedText,
+            .plainText,
+            .text,
+            .data
+        ].compactMap { $0 }
     }
 
     private func handleFileImport(_ result: Result<[URL], Error>) {
@@ -772,9 +780,15 @@ private struct CSVImportSheet: View {
                 }
             }
 
-            let data = try Data(contentsOf: url)
-            rows = try importService.parse(data: data)
-            selectedFileName = url.lastPathComponent
+            let fileName = url.lastPathComponent
+            let data = fileName.lowercased().hasSuffix(".numbers") ? Data() : try readData(from: url)
+            rows = try importService.parseFile(data: data, fileName: fileName)
+            selectedFileName = fileName
+            guard !rows.isEmpty else {
+                assignments = []
+                errorMessage = String(localized: "No importable rows were found in this file.")
+                return
+            }
             refreshAssignments()
         } catch {
             rows = []
@@ -782,6 +796,26 @@ private struct CSVImportSheet: View {
             selectedFileName = nil
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func readData(from url: URL) throws -> Data {
+        let coordinator = NSFileCoordinator()
+        var coordinatorError: NSError?
+        var readResult: Result<Data, Error>?
+
+        coordinator.coordinate(readingItemAt: url, options: [], error: &coordinatorError) { coordinatedURL in
+            readResult = Result {
+                try Data(contentsOf: coordinatedURL)
+            }
+        }
+
+        if let readResult {
+            return try readResult.get()
+        }
+        if let coordinatorError {
+            throw coordinatorError
+        }
+        return try Data(contentsOf: url)
     }
 
     private func prepareTemplateFile() {
@@ -811,6 +845,12 @@ private struct CSVImportSheet: View {
     }
 
     private func importItems() {
+        guard !assignments.isEmpty else {
+            errorMessage = String(localized: "Choose a file with at least one row before importing.")
+            return
+        }
+
+        isImporting = true
         let photosById = Dictionary(uniqueKeysWithValues: photos.map { ($0.id, $0) })
         var nextOrderIndexByPhotoId = Dictionary(
             grouping: themeItems,
@@ -844,7 +884,12 @@ private struct CSVImportSheet: View {
         }
 
         memorySet.updatedAt = Date()
-        try? modelContext.save()
-        dismiss()
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            isImporting = false
+            errorMessage = error.localizedDescription
+        }
     }
 }

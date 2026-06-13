@@ -1,4 +1,5 @@
 import Foundation
+import CoreXLSX
 
 struct CSVMemoryItemImportService {
     static let templateFileName = "memory-spots-csv-template.csv"
@@ -29,6 +30,7 @@ struct CSVMemoryItemImportService {
         case noPhotos
         case invalidItemsPerPhoto
         case capacityExceeded(rowCount: Int, capacity: Int)
+        case unsupportedNumbersFile
 
         var errorDescription: String? {
             switch self {
@@ -46,39 +48,66 @@ struct CSVMemoryItemImportService {
                 String(localized: "Items per photo must be at least 1.")
             case let .capacityExceeded(rowCount, capacity):
                 String(localized: "This CSV has \(rowCount) rows, but the album can place \(capacity) items with the current setting.")
+            case .unsupportedNumbersFile:
+                String(localized: "Numbers files cannot be read directly. Export the spreadsheet from Numbers as CSV or Excel, then import that file.")
             }
+        }
+    }
+
+    func parseFile(data: Data, fileName: String) throws -> [Row] {
+        switch fileExtension(in: fileName) {
+        case "xlsx":
+            return try parseXLSX(data: data)
+        case "numbers":
+            throw ImportError.unsupportedNumbersFile
+        default:
+            return try parse(data: data)
         }
     }
 
     func parse(data: Data) throws -> [Row] {
         let text = try decode(data: data)
         let records = try parseRecords(in: text)
-        guard let header = records.first else {
-            throw ImportError.missingHeader("front")
-        }
+        return try rows(from: records)
+    }
 
-        let normalizedHeader = header.map { normalizeHeader($0) }
-        guard let frontIndex = normalizedHeader.firstIndex(of: "front") else {
-            throw ImportError.missingHeader("front")
-        }
-        guard let backIndex = normalizedHeader.firstIndex(of: "back") else {
-            throw ImportError.missingHeader("back")
-        }
+    private func rows(from records: [[String]]) throws -> [Row] {
+        let mapping = try columnMapping(in: records)
 
         var rows: [Row] = []
-        for (offset, record) in records.dropFirst().enumerated() {
-            if record.allSatisfy({ $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+        for recordIndex in records.indices where recordIndex >= mapping.dataStartIndex {
+            let record = records[recordIndex]
+            if isEmptyRecord(record) {
                 continue
             }
 
-            let front = value(in: record, at: frontIndex).trimmingCharacters(in: .whitespacesAndNewlines)
-            let back = value(in: record, at: backIndex).trimmingCharacters(in: .whitespacesAndNewlines)
+            let front = value(in: record, at: mapping.frontIndex).trimmingCharacters(in: .whitespacesAndNewlines)
+            let back = value(in: record, at: mapping.backIndex).trimmingCharacters(in: .whitespacesAndNewlines)
             guard !front.isEmpty else {
-                throw ImportError.emptyFront(row: offset + 2)
+                throw ImportError.emptyFront(row: recordIndex + 1)
             }
             rows.append(Row(front: front, back: back))
         }
         return rows
+    }
+
+    private func parseXLSX(data: Data) throws -> [Row] {
+        let file = try XLSXFile(data: data)
+        let sharedStrings = try file.parseSharedStrings()
+        let workbooks = try file.parseWorkbooks()
+
+        for workbook in workbooks {
+            for worksheetPath in try file.parseWorksheetPathsAndNames(workbook: workbook).map(\.path) {
+                let worksheet = try file.parseWorksheet(at: worksheetPath)
+                let records = records(in: worksheet, sharedStrings: sharedStrings)
+                guard !records.isEmpty else {
+                    continue
+                }
+                return try rows(from: records)
+            }
+        }
+
+        throw ImportError.missingHeader("front")
     }
 
     func templateData() -> Data {
@@ -207,8 +236,130 @@ struct CSVMemoryItemImportService {
         return record[index]
     }
 
+    private func columnMapping(in records: [[String]]) throws -> (frontIndex: Int, backIndex: Int, dataStartIndex: Int) {
+        guard let firstContentIndex = records.firstIndex(where: { record in
+            !isEmptyRecord(record) && !isSeparatorDirective(record)
+        }) else {
+            throw ImportError.missingHeader("front")
+        }
+
+        let normalizedHeader = records[firstContentIndex].map { normalizeHeader($0) }
+        let frontIndex = normalizedHeader.firstIndex { isFrontHeader($0) }
+        let backIndex = normalizedHeader.firstIndex { isBackHeader($0) }
+
+        if let frontIndex, let backIndex {
+            return (frontIndex, backIndex, firstContentIndex + 1)
+        }
+        if frontIndex != nil {
+            throw ImportError.missingHeader("back")
+        }
+        if backIndex != nil {
+            throw ImportError.missingHeader("front")
+        }
+        if records[firstContentIndex].count >= 2 {
+            return (0, 1, firstContentIndex)
+        }
+
+        throw ImportError.missingHeader("front")
+    }
+
+    private func isEmptyRecord(_ record: [String]) -> Bool {
+        record.allSatisfy { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
+
+    private func isSeparatorDirective(_ record: [String]) -> Bool {
+        record
+            .joined(separator: ",")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .hasPrefix("sep=")
+    }
+
+    private func isFrontHeader(_ value: String) -> Bool {
+        [
+            "front",
+            "fronttext",
+            "question",
+            "prompt",
+            "term",
+            "word",
+            "omote",
+            "表",
+            "表面",
+            "質問",
+            "問題",
+            "用語",
+            "単語"
+        ].contains(value)
+    }
+
+    private func isBackHeader(_ value: String) -> Bool {
+        [
+            "back",
+            "backtext",
+            "answer",
+            "definition",
+            "meaning",
+            "ura",
+            "裏",
+            "裏面",
+            "答え",
+            "回答",
+            "解答",
+            "定義",
+            "意味"
+        ].contains(value)
+    }
+
     private func normalizeHeader(_ value: String) -> String {
-        value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        value
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "_", with: "")
+            .replacingOccurrences(of: "-", with: "")
+    }
+
+    private func fileExtension(in fileName: String) -> String {
+        URL(fileURLWithPath: fileName).pathExtension.lowercased()
+    }
+
+    private func records(in worksheet: Worksheet, sharedStrings: SharedStrings?) -> [[String]] {
+        (worksheet.data?.rows ?? []).compactMap { row in
+            var valuesByColumn: [Int: String] = [:]
+            var maximumColumn = 0
+
+            for cell in row.cells {
+                let columnIndex = columnIndex(for: cell.reference.column)
+                maximumColumn = max(maximumColumn, columnIndex)
+                valuesByColumn[columnIndex] = value(in: cell, sharedStrings: sharedStrings)
+            }
+
+            guard maximumColumn > 0 else {
+                return nil
+            }
+            return (1...maximumColumn).map { valuesByColumn[$0] ?? "" }
+        }
+    }
+
+    private func value(in cell: Cell, sharedStrings: SharedStrings?) -> String {
+        if cell.type == .sharedString {
+            guard let sharedStrings else {
+                return ""
+            }
+            return cell.stringValue(sharedStrings) ?? ""
+        }
+        if let inlineString = cell.inlineString?.text {
+            return inlineString
+        }
+        return cell.value ?? ""
+    }
+
+    private func columnIndex(for reference: ColumnReference) -> Int {
+        reference.value.unicodeScalars.reduce(0) { result, scalar in
+            let value = Int(scalar.value - ("A" as UnicodeScalar).value + 1)
+            return result * 26 + value
+        }
     }
 
     private func gridCoordinate(position: Int, count: Int) -> (x: Double, y: Double) {

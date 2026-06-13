@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		029808E82B6BF60B2A8B08B0 /* 1C16E944-A18E-4A3B-9651-B639C91F7F65.png in Resources */ = {isa = PBXBuildFile; fileRef = 05A0904057178A9858988362 /* 1C16E944-A18E-4A3B-9651-B639C91F7F65.png */; };
 		050BC0B430E36F5B4EA9A63D /* 240C63AE-B4CF-4BE2-90BE-D450878B809F.png in Resources */ = {isa = PBXBuildFile; fileRef = 78D80320236AFC8013A07D70 /* 240C63AE-B4CF-4BE2-90BE-D450878B809F.png */; };
+		06435F9EDEE9FF743190FEC2 /* CoreXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = 385B3E2B1BE891D4E97BBC62 /* CoreXLSX */; };
 		0A9115B0DB1C6E24CACE71CF /* 7BD59672-C2DB-4B17-BBEF-9FAE24FEBEC5 2.png in Resources */ = {isa = PBXBuildFile; fileRef = 8C8DB4479190E1D72EE7B58F /* 7BD59672-C2DB-4B17-BBEF-9FAE24FEBEC5 2.png */; };
 		17A501296C1D5DCA7EC4BC72 /* memory_notebook_card.png in Resources */ = {isa = PBXBuildFile; fileRef = 5050C9EA85B8B1736C509818 /* memory_notebook_card.png */; };
 		215E18EF01FEB39A8D7B234B /* D86AE38B-B228-4285-BD94-6AF2FCD1C71E 2.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FF7EE2EBAA4533EAC135028 /* D86AE38B-B228-4285-BD94-6AF2FCD1C71E 2.png */; };
@@ -76,7 +77,7 @@
 		14F7D7FB9D12E1C165784453 /* GeometryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtils.swift; sourceTree = "<group>"; };
 		15384D8B8F9257A96D4F0634 /* MemoryMapUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapUITests.swift; sourceTree = "<group>"; };
 		1C7254FA0787EA207C87E000 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F520C499840A3BC6065F1C5 /* MindPalace.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MindPalace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20328AB420EA87A3F11288DB /* ImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageStore.swift; sourceTree = "<group>"; };
 		24AF8A004F1DE9A8492D6803 /* SeedDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataService.swift; sourceTree = "<group>"; };
 		29A661D21CEBD2F9D27F8127 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -104,7 +105,7 @@
 		AAA2E82357112AAD1D7B9B7C /* TutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialView.swift; sourceTree = "<group>"; };
 		ABF5A89E703D183DD348BDBA /* LocationEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationEditorView.swift; sourceTree = "<group>"; };
 		AD9FCFA18E5FD9240D12A651 /* FEC8D736-6AB6-46A2-8727-EFEC90FF6C83.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "FEC8D736-6AB6-46A2-8727-EFEC90FF6C83.jpeg"; sourceTree = "<group>"; };
-		AFC3207809A4D16D2C368131 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AFC3207809A4D16D2C368131 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BA729BF3D594D7189D844D64 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		BB5C0FEAC942FC12C5DA2F12 /* CSVMemoryItemImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVMemoryItemImportServiceTests.swift; sourceTree = "<group>"; };
 		BD703F90EBF77D285585A7CC /* MemoryMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMapView.swift; sourceTree = "<group>"; };
@@ -120,6 +121,17 @@
 		F5944462017D1C31DDFD75D1 /* C3D46A91-BC5E-498F-A172-A5B06D777101.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "C3D46A91-BC5E-498F-A172-A5B06D777101.png"; sourceTree = "<group>"; };
 		FC8A01F6F0A04C8797CF1B4E /* MindPalaceTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MindPalaceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E60B914798000885D026395E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06435F9EDEE9FF743190FEC2 /* CoreXLSX in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0DC18CA806C17B9F8DB7C121 = {
@@ -265,6 +277,7 @@
 			buildPhases = (
 				458565D6C28B3082504ABF0E /* Sources */,
 				094D4BF9DD249E75267848AF /* Resources */,
+				E60B914798000885D026395E /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -272,6 +285,7 @@
 			);
 			name = MindPalace;
 			packageProductDependencies = (
+				385B3E2B1BE891D4E97BBC62 /* CoreXLSX */,
 			);
 			productName = MindPalace;
 			productReference = 1F520C499840A3BC6065F1C5 /* MindPalace.app */;
@@ -350,6 +364,9 @@
 			);
 			mainGroup = 0DC18CA806C17B9F8DB7C121;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				72F39BE6E134B876EEF123F2 /* XCRemoteSwiftPackageReference "CoreXLSX" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D4D576095A3470779987EB97 /* Products */;
 			projectDirPath = "";
@@ -731,6 +748,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		72F39BE6E134B876EEF123F2 /* XCRemoteSwiftPackageReference "CoreXLSX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CoreOffice/CoreXLSX.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.14.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		385B3E2B1BE891D4E97BBC62 /* CoreXLSX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 72F39BE6E134B876EEF123F2 /* XCRemoteSwiftPackageReference "CoreXLSX" */;
+			productName = CoreXLSX;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3D53D31276917A441A86FF9E /* Project object */;
 }
