@@ -230,7 +230,7 @@ struct PhotoEditorView: View {
             photoId: photo.id,
             themeId: selectedTheme.id,
             type: type,
-            frontText: defaultFrontText(for: type),
+            frontText: "",
             backText: "",
             colorName: type == .stickyText ? "yellow" : nil,
             iconName: type == .icon ? "star.fill" : nil,
@@ -259,7 +259,7 @@ struct PhotoEditorView: View {
                 photoId: photo.id,
                 themeId: selectedTheme.id,
                 type: .image,
-                frontText: String(localized: "Image Note"),
+                frontText: "",
                 backText: "",
                 imagePath: imagePath,
                 scale: 1,
@@ -290,21 +290,6 @@ struct PhotoEditorView: View {
     private func normalizeItemOrder() {
         for (index, item) in themeItems(for: currentPhoto).enumerated() {
             item.orderIndex = index
-        }
-    }
-
-    private func defaultFrontText(for type: MemoryItemType) -> String {
-        switch type {
-        case .stickyText:
-            String(localized: "New Note")
-        case .image:
-            String(localized: "Image Note")
-        case .icon:
-            String(localized: "Star")
-        case .numberLabel:
-            "\(themeItems(for: currentPhoto).filter { $0.itemType == .numberLabel }.count + 1)"
-        case .arrow:
-            String(localized: "Arrow")
         }
     }
 }
